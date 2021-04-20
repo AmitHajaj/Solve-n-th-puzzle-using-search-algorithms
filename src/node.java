@@ -5,7 +5,9 @@ public class node {
     private int id;
     private int[][] state;
     private int prevState;
+    private String howIGotHere;
     location [] locations;
+    private static int stateCounter = 0; //Keeps track on the states that created.
 
 
 
@@ -14,6 +16,8 @@ public class node {
         this.id = id;
         this.state = state;
         this.prevState = prevID;
+        this.howIGotHere = "";
+        stateCounter++;
         int cnt = 0;
         for(int i=0; i<state.length; i++){
             for(int j=0; j<state[i].length; j++){
@@ -121,13 +125,14 @@ public class node {
         return ans;
     }
 
-    public int manhattenDistance(){
-
-        return 0;
-    }
+//    public int manhattenDistance(){
+//
+//        return 0;
+//    }
 
     /**
      * Move the blank tile 1 step down. If possible.
+     * cost-> 5
      * @param l- the location of the blank tile.
      * @return the state which we move to.
      */
@@ -140,11 +145,15 @@ public class node {
             int temp = this.state[l.getY()][l.getX()];
             ans.state[l.getY()][l.getX()] = this.state[l.getY()+1][l.getX()];
             ans.state[l.getY()+1][l.getX()] = temp;
+
+            ans.prevState = this.id;
+            ans.howIGotHere = "" + ans.state[l.getY()][l.getX()] + "D";
             return ans;
         }
     }
     /**
      * Move the blank tile 1 step up. If possible.
+     * cost-> 5
      * @param l- the location of the blank tile.
      * @return the state which we move to.
      */
@@ -157,11 +166,15 @@ public class node {
             int temp = this.state[l.getY()][l.getX()];
             ans.state[l.getY()][l.getX()] = this.state[l.getY()-1][l.getX()];
             ans.state[l.getY()-1][l.getX()] = temp;
+
+            ans.prevState = this.id;
+            ans.howIGotHere = "" + ans.state[l.getY()][l.getX()] + "U";
             return ans;
         }
     }
     /**
      * Move the blank tile 1 step left. If possible.
+     * cost-> 5
      * @param l- the location of the blank tile.
      * @return the state which we move to.
      */
@@ -174,11 +187,15 @@ public class node {
             int temp = this.state[l.getY()][l.getX()];
             ans.state[l.getY()][l.getX()] = this.state[l.getY()][l.getX()-1];
             ans.state[l.getY()][l.getX()-1] = temp;
+
+            ans.prevState = this.id;
+            ans.howIGotHere = "" + ans.state[l.getY()][l.getX()] + "L";
             return ans;
         }
     }
     /**
      * Move the blank tile 1 step right. If possible.
+     * cost-> 5
      * @param l- the location of the blank tile.
      * @return the state which we move to.
      */
@@ -191,11 +208,15 @@ public class node {
             int temp = this.state[l.getY()][l.getX()];
             ans.state[l.getY()][l.getX()] = this.state[l.getY()][l.getX()+1];
             ans.state[l.getY()][l.getX()+1] = temp;
+
+            ans.prevState = this.id;
+            ans.howIGotHere = "" + ans.state[l.getY()][l.getX()] + "R";
             return ans;
         }
     }
     /**
      * Move the two jointed blank tiles 1 step right. If possible.
+     * cost-> 6
      * @return the state which we move to.
      */
     public node twoRight(){
@@ -214,11 +235,14 @@ public class node {
             ans.state[second.getY()][second.getX()] = this.state[second.getY()][second.getX()+1];
             ans.state[second.getY()][second.getX()+1] = tempSecond;
 
+            ans.prevState = this.id;
+            ans.howIGotHere = "" + ans.state[first.getY()][first.getX()] + "&" + ans.state[second.getY()][second.getX()] + "R";
             return ans;
         }
     }
     /**
      * Move the two jointed blank tiles 1 step left. If possible.
+     * cost-> 6
      * @return the state which we move to.
      */
     public node twoLeft(){
@@ -237,11 +261,14 @@ public class node {
             ans.state[second.getY()][second.getX()] = this.state[second.getY()][second.getX()-1];
             ans.state[second.getY()][second.getX()-1] = tempSecond;
 
+            ans.prevState = this.id;
+            ans.howIGotHere = "" + ans.state[first.getY()][first.getX()] + "&" + ans.state[second.getY()][second.getX()] + "L";
             return ans;
         }
     }
     /**
      * Move the two jointed blank tiles 1 step up. If possible.
+     * cost-> 7
      * @return the state which we move to.
      */
     public node twoUp(){
@@ -260,12 +287,15 @@ public class node {
             ans.state[second.getY()][second.getX()] = this.state[second.getY()-1][second.getX()];
             ans.state[second.getY()-1][second.getX()] = tempSecond;
 
+            ans.prevState = this.id;
+            ans.howIGotHere = "" + ans.state[first.getY()][first.getX()] + "&" + ans.state[second.getY()][second.getX()] + "U";
             return ans;
         }
 
     }
     /**
      * Move the two jointed blank tiles 1 step down. If possible.
+     * cost-> 7
      * @return the state which we move to.
      */
     public node twoDown(){
@@ -284,6 +314,8 @@ public class node {
             ans.state[second.getY()][second.getX()] = this.state[second.getY()+1][second.getX()];
             ans.state[second.getY()+1][second.getX()] = tempSecond;
 
+            ans.prevState = this.id;
+            ans.howIGotHere = "" + ans.state[first.getY()][first.getX()] + "&" + ans.state[second.getY()][second.getX()] + "D";
             return ans;
         }
     }
