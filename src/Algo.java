@@ -6,9 +6,7 @@ public class Algo {
     private HashSet<String> operators = new HashSet<>();
 
     public Algo() {
-//        String[] operator = {"up", "down", "left", "right", "twoUp", "twoDown", "twoRight", "twoLeft"};
         this.operators = new HashSet<>();
-//        this.operators.addAll(Arrays.asList(operator));
     }
 
     public List<node> BFS_V(node start, node goal) throws InvocationTargetException, IllegalAccessException, NoSuchMethodException {
@@ -37,7 +35,6 @@ public class Algo {
                     }
                     else{
                         L.add(g);
-                        // TODO: think how to set L as a priority queue based on the cost and the created iteration...
                     }
                 }
             }
@@ -57,7 +54,6 @@ public class Algo {
 //                            }
 //                            else{
 //                                L.add(g);
-//                                // TODO: think how to set L as a priority queue based on the cost and the created iteration...
 //                            }
 //                        }
 //                    }

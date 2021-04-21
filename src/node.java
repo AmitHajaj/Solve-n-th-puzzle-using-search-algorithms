@@ -4,12 +4,10 @@ public class node {
     private int id;
     private int[][] state;
     private node prevState;
-     String howIGotHere;
+    String howIGotHere;
+    private int costToHere;
     List<location> locations;
     private static int stateCounter = 0; //Keeps track on the states that created.
-
-
-
 
     public node(int[][] state, node prev) {
         this.id = id;
@@ -17,6 +15,7 @@ public class node {
         this.prevState = prev;
         this.howIGotHere = "";
         this.locations = new LinkedList<>();
+        this.costToHere = 0;
         stateCounter++;
         int cnt = 0;
         for(int i=0; i<state.length; i++){
@@ -58,6 +57,14 @@ public class node {
         this.prevState = prevState;
     }
 
+    public int getCostToHere() {
+        return costToHere;
+    }
+
+    public void setCostToHere(int costToHere) {
+        this.costToHere = costToHere;
+    }
+
     /**
      * In case there is two blank tiles on the puzzle, this method determine if they are joint.
      * @return 1 - joint horizontally
@@ -69,10 +76,10 @@ public class node {
             return 0; //Only one blank tile.
         }
         else{
-            for(int i = 0; i<this.locations.size(); i++){
+            for(int i = 0; i<this.locations.size();){
                 if(locations.get(i).getX() == locations.get(i+1).getX()){
                     if(Math.abs(locations.get(i).getY() - locations.get(i+1).getY()) == 1){
-                        return 1; //Horizontal jointed.
+                        return -1; //Horizontal jointed.
                     }
                     else{
                         return 0;
@@ -80,11 +87,14 @@ public class node {
                 }
                 else if(locations.get(i).getY() == locations.get(i+1).getY()){
                     if(Math.abs(locations.get(i).getX() - locations.get(i+1).getX()) == 1){
-                        return -1; //Vertically jointed.
+                        return 1; //Vertically jointed.
                     }
                     else{
                         return 0;
                     }
+                }
+                else{
+                    break;
                 }
             }
         }
@@ -118,7 +128,7 @@ public class node {
         }
 
         for(node n : temp){
-            if(n != null){
+            if(n != null && !ans.contains(n) && !n.equals(this)){
                 ans.add(n);
             }
         }
@@ -135,18 +145,25 @@ public class node {
         if(l.getY() == this.state.length-1){
             return null;
         }
-        else{
+        else {
             node ans = this.clone();
             int temp = this.state[l.getY()][l.getX()];
-            ans.state[l.getY()][l.getX()] = this.state[l.getY()+1][l.getX()];
-            ans.state[l.getY()+1][l.getX()] = temp;
+            ans.state[l.getY()][l.getX()] = this.state[l.getY() + 1][l.getX()];
+            ans.state[l.getY() + 1][l.getX()] = temp;
 
             //set new location:
-            ans.locations.get(0).setY(l.getY()+1);
+            ans.locations.get(0).setY(l.getY() + 1);
 
             ans.prevState = this;
             ans.howIGotHere = "" + ans.state[l.getY()][l.getX()] + "U";
-            return ans;
+            ans.setCostToHere(5);
+
+            if (ans.equals(this.prevState)) {
+                return null;
+            }
+            else {
+                return ans;
+            }
         }
     }
     /**
@@ -170,7 +187,13 @@ public class node {
 
             ans.prevState = this;
             ans.howIGotHere = "" + ans.state[l.getY()][l.getX()] + "D";
-            return ans;
+            ans.setCostToHere(5);
+            if(ans.equals(this.prevState)) {
+                return null;
+            }
+            else{
+                return ans;
+            }
         }
     }
     /**
@@ -194,7 +217,13 @@ public class node {
 
             ans.prevState = this;
             ans.howIGotHere = "" + ans.state[l.getY()][l.getX()] + "R";
-            return ans;
+            ans.setCostToHere(5);
+            if(ans.equals(this.prevState)) {
+                return null;
+            }
+            else{
+                return ans;
+            }
         }
     }
     /**
@@ -218,7 +247,13 @@ public class node {
 
             ans.prevState = this;
             ans.howIGotHere = "" + ans.state[l.getY()][l.getX()] + "L";
-            return ans;
+            ans.setCostToHere(5);
+            if(ans.equals(this.prevState)) {
+                return null;
+            }
+            else{
+                return ans;
+            }
         }
     }
     /**
@@ -242,9 +277,19 @@ public class node {
             ans.state[second.getY()][second.getX()] = this.state[second.getY()][second.getX()+1];
             ans.state[second.getY()][second.getX()+1] = tempSecond;
 
+            //set new location:
+            ans.locations.get(0).setX(first.getX()+1);
+            ans.locations.get(1).setX(second.getX()+1);
+
             ans.prevState = this;
             ans.howIGotHere = "" + ans.state[first.getY()][first.getX()] + "&" + ans.state[second.getY()][second.getX()] + "L";
-            return ans;
+            ans.setCostToHere(8);
+            if(ans.equals(this.prevState)) {
+                return null;
+            }
+            else{
+                return ans;
+            }
         }
     }
     /**
@@ -268,9 +313,19 @@ public class node {
             ans.state[second.getY()][second.getX()] = this.state[second.getY()][second.getX()-1];
             ans.state[second.getY()][second.getX()-1] = tempSecond;
 
+            //set new location:
+            ans.locations.get(0).setX(first.getX()-1);
+            ans.locations.get(1).setX(second.getX()-1);
+
             ans.prevState = this;
             ans.howIGotHere = "" + ans.state[first.getY()][first.getX()] + "&" + ans.state[second.getY()][second.getX()] + "R";
-            return ans;
+            ans.setCostToHere(8);
+            if(ans.equals(this.prevState)) {
+                return null;
+            }
+            else{
+                return ans;
+            }
         }
     }
     /**
@@ -294,9 +349,19 @@ public class node {
             ans.state[second.getY()][second.getX()] = this.state[second.getY()-1][second.getX()];
             ans.state[second.getY()-1][second.getX()] = tempSecond;
 
+            //set new location:
+            ans.locations.get(0).setY(first.getY()-1);
+            ans.locations.get(1).setY(first.getY()-1);
+
             ans.prevState = this;
             ans.howIGotHere = "" + ans.state[first.getY()][first.getX()] + "&" + ans.state[second.getY()][second.getX()] + "D";
-            return ans;
+            ans.setCostToHere(7);
+            if(ans.equals(this.prevState)) {
+                return null;
+            }
+            else{
+                return ans;
+            }
         }
 
     }
@@ -321,9 +386,19 @@ public class node {
             ans.state[second.getY()][second.getX()] = this.state[second.getY()+1][second.getX()];
             ans.state[second.getY()+1][second.getX()] = tempSecond;
 
+            //set new location:
+            ans.locations.get(0).setY(first.getY()+1);
+            ans.locations.get(1).setY(first.getY()+1);
+
             ans.prevState = this;
             ans.howIGotHere = "" + ans.state[first.getY()][first.getX()] + "&" + ans.state[second.getY()][second.getX()] + "U";
-            return ans;
+            ans.setCostToHere(7);
+            if(ans.equals(this.prevState)) {
+                return null;
+            }
+            else{
+                return ans;
+            }
         }
     }
 

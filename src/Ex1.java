@@ -4,8 +4,14 @@ import java.util.Stack;
 
 public class Ex1 {
     public static void main(String[] args){
-        int[][] goalState = {{1,2},{3,-1}};
-        int[][] currentState = {{-1,3},{2,1}};
+        int[][] currentState = {{1,-1,4},
+                                {3,5,6},
+                                {2,-1,7}
+                                };
+        int[][] goalState = {{1,2,3},
+                            {4,5,6},
+                            {7,-1,-1}
+                            };
 
         node start = new node(currentState, null);
         node target = new node(goalState, null);
