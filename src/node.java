@@ -1,33 +1,33 @@
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class node {
     private int id;
     private int[][] state;
-    private int prevState;
-    private String howIGotHere;
-    location [] locations;
+    private node prevState;
+     String howIGotHere;
+    List<location> locations;
     private static int stateCounter = 0; //Keeps track on the states that created.
 
 
 
 
-    public node(int[][] state, int prevID) {
+    public node(int[][] state, node prev) {
         this.id = id;
         this.state = state;
-        this.prevState = prevID;
+        this.prevState = prev;
         this.howIGotHere = "";
+        this.locations = new LinkedList<>();
         stateCounter++;
         int cnt = 0;
         for(int i=0; i<state.length; i++){
             for(int j=0; j<state[i].length; j++){
                 if(state[i][j] == -1){
                     if(cnt == 0) {
-                        location first = new location(j, i);
+                        this.locations.add(new location(j, i));
                         cnt++;
                     }
                     else if(cnt == 1){
-                        location second = new location(j, i);
+                        this.locations.add(new location(j, i));
                     }
                 }
             }
@@ -50,36 +50,36 @@ public class node {
         this.state = state;
     }
 
-    public int getPrevState() {
+    public node getPrevState() {
         return prevState;
     }
 
-    public void setPrevState(int prevState) {
+    public void setPrevState(node prevState) {
         this.prevState = prevState;
     }
 
     /**
-     * In case there is two blnak tiles on the puzzle, this method determine if they are joint.
+     * In case there is two blank tiles on the puzzle, this method determine if they are joint.
      * @return 1 - joint horizontally
      *         -1 - joint vertically
      *         0 - not jointed at all or there is only one blank tile.
      */
     public int isJoint(){
-        if(this.locations.length == 1){
+        if(this.locations.size() == 1){
             return 0; //Only one blank tile.
         }
         else{
-            for(int i = 0; i<this.locations.length; i++){
-                if(locations[i].getX() == locations[i+1].getX()){
-                    if(Math.abs(locations[i].getY() - locations[i+1].getY()) == 1){
+            for(int i = 0; i<this.locations.size(); i++){
+                if(locations.get(i).getX() == locations.get(i+1).getX()){
+                    if(Math.abs(locations.get(i).getY() - locations.get(i+1).getY()) == 1){
                         return 1; //Horizontal jointed.
                     }
                     else{
                         return 0;
                     }
                 }
-                else if(locations[i].getY() == locations[i+1].getY()){
-                    if(Math.abs(locations[i].getX() - locations[i+1].getX()) == 1){
+                else if(locations.get(i).getY() == locations.get(i+1).getY()){
+                    if(Math.abs(locations.get(i).getX() - locations.get(i+1).getX()) == 1){
                         return -1; //Vertically jointed.
                     }
                     else{
@@ -125,11 +125,6 @@ public class node {
         return ans;
     }
 
-//    public int manhattenDistance(){
-//
-//        return 0;
-//    }
-
     /**
      * Move the blank tile 1 step down. If possible.
      * cost-> 5
@@ -146,8 +141,11 @@ public class node {
             ans.state[l.getY()][l.getX()] = this.state[l.getY()+1][l.getX()];
             ans.state[l.getY()+1][l.getX()] = temp;
 
-            ans.prevState = this.id;
-            ans.howIGotHere = "" + ans.state[l.getY()][l.getX()] + "D";
+            //set new location:
+            ans.locations.get(0).setY(l.getY()+1);
+
+            ans.prevState = this;
+            ans.howIGotHere = "" + ans.state[l.getY()][l.getX()] + "U";
             return ans;
         }
     }
@@ -167,8 +165,11 @@ public class node {
             ans.state[l.getY()][l.getX()] = this.state[l.getY()-1][l.getX()];
             ans.state[l.getY()-1][l.getX()] = temp;
 
-            ans.prevState = this.id;
-            ans.howIGotHere = "" + ans.state[l.getY()][l.getX()] + "U";
+            //set new location:
+            ans.locations.get(0).setY(l.getY()-1);
+
+            ans.prevState = this;
+            ans.howIGotHere = "" + ans.state[l.getY()][l.getX()] + "D";
             return ans;
         }
     }
@@ -188,8 +189,11 @@ public class node {
             ans.state[l.getY()][l.getX()] = this.state[l.getY()][l.getX()-1];
             ans.state[l.getY()][l.getX()-1] = temp;
 
-            ans.prevState = this.id;
-            ans.howIGotHere = "" + ans.state[l.getY()][l.getX()] + "L";
+            //set new location:
+            ans.locations.get(0).setX(l.getX()-1);
+
+            ans.prevState = this;
+            ans.howIGotHere = "" + ans.state[l.getY()][l.getX()] + "R";
             return ans;
         }
     }
@@ -209,8 +213,11 @@ public class node {
             ans.state[l.getY()][l.getX()] = this.state[l.getY()][l.getX()+1];
             ans.state[l.getY()][l.getX()+1] = temp;
 
-            ans.prevState = this.id;
-            ans.howIGotHere = "" + ans.state[l.getY()][l.getX()] + "R";
+            //set new location:
+            ans.locations.get(0).setX(l.getX()+1);
+
+            ans.prevState = this;
+            ans.howIGotHere = "" + ans.state[l.getY()][l.getX()] + "L";
             return ans;
         }
     }
@@ -220,12 +227,12 @@ public class node {
      * @return the state which we move to.
      */
     public node twoRight(){
-        if(this.locations[0].getX() == this.state[0].length-1){
+        if(this.locations.get(0).getX() == this.state[0].length-1){
             return null;
         }
         else{
-            location first = this.locations[0];
-            location second = this.locations[1];
+            location first = this.locations.get(0);
+            location second = this.locations.get(1);
             node ans = this.clone();
             int tempFirst = this.state[first.getY()][first.getX()];
             ans.state[first.getY()][first.getX()] = this.state[first.getY()][first.getX()+1];
@@ -235,8 +242,8 @@ public class node {
             ans.state[second.getY()][second.getX()] = this.state[second.getY()][second.getX()+1];
             ans.state[second.getY()][second.getX()+1] = tempSecond;
 
-            ans.prevState = this.id;
-            ans.howIGotHere = "" + ans.state[first.getY()][first.getX()] + "&" + ans.state[second.getY()][second.getX()] + "R";
+            ans.prevState = this;
+            ans.howIGotHere = "" + ans.state[first.getY()][first.getX()] + "&" + ans.state[second.getY()][second.getX()] + "L";
             return ans;
         }
     }
@@ -246,12 +253,12 @@ public class node {
      * @return the state which we move to.
      */
     public node twoLeft(){
-        if(this.locations[0].getX() == 0){
+        if(this.locations.get(0).getX() == 0){
             return null;
         }
         else{
-            location first = this.locations[0];
-            location second = this.locations[1];
+            location first = this.locations.get(0);
+            location second = this.locations.get(1);
             node ans = this.clone();
             int tempFirst = this.state[first.getY()][first.getX()];
             ans.state[first.getY()][first.getX()] = this.state[first.getY()][first.getX()-1];
@@ -261,8 +268,8 @@ public class node {
             ans.state[second.getY()][second.getX()] = this.state[second.getY()][second.getX()-1];
             ans.state[second.getY()][second.getX()-1] = tempSecond;
 
-            ans.prevState = this.id;
-            ans.howIGotHere = "" + ans.state[first.getY()][first.getX()] + "&" + ans.state[second.getY()][second.getX()] + "L";
+            ans.prevState = this;
+            ans.howIGotHere = "" + ans.state[first.getY()][first.getX()] + "&" + ans.state[second.getY()][second.getX()] + "R";
             return ans;
         }
     }
@@ -272,12 +279,12 @@ public class node {
      * @return the state which we move to.
      */
     public node twoUp(){
-        if(this.locations[0].getY() == 0){
+        if(this.locations.get(0).getY() == 0){
             return null;
         }
         else{
-            location first = this.locations[0];
-            location second = this.locations[1];
+            location first = this.locations.get(0);
+            location second = this.locations.get(1);
             node ans = this.clone();
             int tempFirst = this.state[first.getY()][first.getX()];
             ans.state[first.getY()][first.getX()] = this.state[first.getY()-1][first.getX()];
@@ -287,8 +294,8 @@ public class node {
             ans.state[second.getY()][second.getX()] = this.state[second.getY()-1][second.getX()];
             ans.state[second.getY()-1][second.getX()] = tempSecond;
 
-            ans.prevState = this.id;
-            ans.howIGotHere = "" + ans.state[first.getY()][first.getX()] + "&" + ans.state[second.getY()][second.getX()] + "U";
+            ans.prevState = this;
+            ans.howIGotHere = "" + ans.state[first.getY()][first.getX()] + "&" + ans.state[second.getY()][second.getX()] + "D";
             return ans;
         }
 
@@ -299,12 +306,12 @@ public class node {
      * @return the state which we move to.
      */
     public node twoDown(){
-        if(this.locations[0].getY() == this.state.length-1){
+        if(this.locations.get(0).getY() == this.state.length-1){
             return null;
         }
         else{
-            location first = this.locations[0];
-            location second = this.locations[1];
+            location first = this.locations.get(0);
+            location second = this.locations.get(1);
             node ans = this.clone();
             int tempFirst = this.state[first.getY()][first.getX()];
             ans.state[first.getY()][first.getX()] = this.state[first.getY()+1][first.getX()];
@@ -314,10 +321,36 @@ public class node {
             ans.state[second.getY()][second.getX()] = this.state[second.getY()+1][second.getX()];
             ans.state[second.getY()+1][second.getX()] = tempSecond;
 
-            ans.prevState = this.id;
-            ans.howIGotHere = "" + ans.state[first.getY()][first.getX()] + "&" + ans.state[second.getY()][second.getX()] + "D";
+            ans.prevState = this;
+            ans.howIGotHere = "" + ans.state[first.getY()][first.getX()] + "&" + ans.state[second.getY()][second.getX()] + "U";
             return ans;
         }
+    }
+
+    @Override
+    public String toString() {
+        return "" +
+                 Arrays.toString(state) +
+                "";
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if(obj == this){
+            return true;
+        }
+        if (!(obj instanceof node)){
+            return false;
+        }
+
+        for(int i=0; i<this.getState().length; i++){
+            for(int j=0; j<this.getState()[i].length; j++){
+                if(this.state[i][j] != ((node) obj).getState()[i][j]){
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     /**
@@ -326,12 +359,12 @@ public class node {
      */
     public node clone(){
         int[][] ans = new int[this.state.length][this.state[0].length];
-        for(int i = 0; i<this.state[i].length; i++){
+        for(int i = 0; i<this.state.length; i++){
             for(int j =0; j<this.state[i].length; j++){
                 ans[i][j] = this.state[i][j];
             }
         }
-        node clone = new node(ans, this.id);
+        node clone = new node(ans, this);
         return clone;
     }
 }
