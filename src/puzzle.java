@@ -12,16 +12,32 @@ public class puzzle {
         this.priceTable = priceTable;
     }
 
+    public node getGoalState() {
+        return goalState;
+    }
+
+    public void setGoalState(node goalState) {
+        this.goalState = goalState;
+    }
+
+    public node getCurrentState() {
+        return currentState;
+    }
+
+    public void setCurrentState(node currentState) {
+        this.currentState = currentState;
+    }
+
     /**
      * heuristic function which sums all misplaced tiles steps to get to goal state.
      * @return the total sum calculated as described.
      */
-    public int manhattan(){
+    public int manhattan(node n){
         int cost = 0;
-        for(int i = 0; i<this.currentState.getState().length; i++) {
-            for(int j = 0; j< this.currentState.getState()[i].length; j++){
-                if(this.currentState.getState()[i][j] != (i*this.currentState.getState()[i].length + (j+1)) ){
-                    cost += Math.abs(i - getRow(this.currentState.getState()[i][j])) + Math.abs(j - getCol(this.currentState.getState()[i][j]));
+        for(int i = 0; i<n.getState().length; i++) {
+            for(int j = 0; j< n.getState()[i].length; j++){
+                if(n.getState()[i][j] != (i*n.getState()[i].length + (j+1)) && n.getState()[i][j] != -1){
+                    cost += Math.abs(i - getRow(n.getState()[i][j])) + Math.abs(j - getCol(n.getState()[i][j]));
                 }
             }
         }
@@ -32,11 +48,11 @@ public class puzzle {
      * heuristic function which sums the number of misplaced tiles.
      * @return the total sum calculated as described.
      */
-    public int hamming(){
+    public int hamming(node n){
         int cost = 0;
-        for(int i = 0; i<this.currentState.getState().length; i++) {
-            for(int j = 0; j< this.currentState.getState()[i].length; j++){
-                if(this.currentState.getState()[i][j] != (i*this.currentState.getState()[i].length + (j+1)) ){
+        for(int i = 0; i<n.getState().length; i++) {
+            for(int j = 0; j< n.getState()[i].length; j++){
+                if(n.getState()[i][j] != (i*n.getState()[i].length + (j+1)) ){
                     cost++;
                 }
             }
@@ -75,7 +91,4 @@ public class puzzle {
         }
         return -1;
     }
-
-
-
 }

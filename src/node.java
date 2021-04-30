@@ -1,13 +1,15 @@
 import java.util.*;
 
-public class node {
+public class node implements Comparable<node> {
     private int id;
     private int[][] state;
     private node prevState;
     String howIGotHere;
     private int costToHere;
+    private int f;
     List<location> locations;
-    private static int stateCounter = 0; //Keeps track on the states that created.
+    private static int stateCounter = 0; //Keeps track on the states that created. mainly for comparator.
+
 
     public node(int[][] state, node prev) {
         this.id = id;
@@ -16,7 +18,7 @@ public class node {
         this.howIGotHere = "";
         this.locations = new LinkedList<>();
         this.costToHere = 0;
-        stateCounter++;
+        this.id = stateCounter++;
         int cnt = 0;
         for(int i=0; i<state.length; i++){
             for(int j=0; j<state[i].length; j++){
@@ -31,6 +33,14 @@ public class node {
                 }
             }
         }
+    }
+
+    public int getF() {
+        return f;
+    }
+
+    public void setF(int f) {
+        this.f = f;
     }
 
     public int getId() {
@@ -142,7 +152,7 @@ public class node {
      * @return the state which we move to.
      */
     public node down(location l){
-        if(l.getY() == this.state.length-1){
+        if(l.getY() == this.state.length-1 || this.state[l.getY() + 1][l.getX()] == -1){
             return null;
         }
         else {
@@ -152,7 +162,11 @@ public class node {
             ans.state[l.getY() + 1][l.getX()] = temp;
 
             //set new location:
-            ans.locations.get(0).setY(l.getY() + 1);
+            for(location ls: ans.locations){
+                if(ls.getY() == l.getY() && ls.getX() == l.getX()){
+                    ls.setY(l.getY()+1);
+                }
+            }
 
             ans.prevState = this;
             ans.howIGotHere = "" + ans.state[l.getY()][l.getX()] + "U";
@@ -173,7 +187,7 @@ public class node {
      * @return the state which we move to.
      */
     public node up(location l){
-        if(l.getY() == 0){
+        if(l.getY() == 0 || this.state[l.getY() - 1][l.getX()] == -1){
             return null;
         }
         else{
@@ -183,7 +197,11 @@ public class node {
             ans.state[l.getY()-1][l.getX()] = temp;
 
             //set new location:
-            ans.locations.get(0).setY(l.getY()-1);
+            for(location ls: ans.locations){
+                if(ls.getY() == l.getY() && ls.getX() == l.getX()){
+                    ls.setY(l.getY()-1);
+                }
+            }
 
             ans.prevState = this;
             ans.howIGotHere = "" + ans.state[l.getY()][l.getX()] + "D";
@@ -203,7 +221,7 @@ public class node {
      * @return the state which we move to.
      */
     public node left(location l){
-        if(l.getX() == 0){
+        if(l.getX() == 0 || this.state[l.getY()][l.getX()-1] == -1){
             return null;
         }
         else{
@@ -213,7 +231,12 @@ public class node {
             ans.state[l.getY()][l.getX()-1] = temp;
 
             //set new location:
-            ans.locations.get(0).setX(l.getX()-1);
+            for(location ls: ans.locations){
+                if(ls.getY() == l.getY() && ls.getX() == l.getX()){
+                    ls.setX(l.getX()-1);
+                }
+            }
+
 
             ans.prevState = this;
             ans.howIGotHere = "" + ans.state[l.getY()][l.getX()] + "R";
@@ -233,7 +256,7 @@ public class node {
      * @return the state which we move to.
      */
     public node right(location l){
-        if(l.getX() == this.state[0].length-1){
+        if(l.getX() == this.state[0].length-1 || this.state[l.getY()][l.getX()+1] == -1){
             return null;
         }
         else{
@@ -243,7 +266,11 @@ public class node {
             ans.state[l.getY()][l.getX()+1] = temp;
 
             //set new location:
-            ans.locations.get(0).setX(l.getX()+1);
+            for(location ls: ans.locations){
+                if(ls.getY() == l.getY() && ls.getX() == l.getX()){
+                    ls.setX(l.getX()+1);
+                }
+            }
 
             ans.prevState = this;
             ans.howIGotHere = "" + ans.state[l.getY()][l.getX()] + "L";
@@ -404,9 +431,16 @@ public class node {
 
     @Override
     public String toString() {
-        return "" +
-                 Arrays.toString(state) +
-                "";
+        String ans = "{";
+        for(int i=0; i<this.getState().length; i++){
+            ans += "{";
+            for(int j=0; j<this.getState()[i].length; j++){
+                ans += this.getState()[i][j];
+            }
+            ans+="}\n";
+        }
+        ans += "}\n";
+        return ans;
     }
 
     @Override
@@ -441,5 +475,26 @@ public class node {
         }
         node clone = new node(ans, this);
         return clone;
+    }
+
+    @Override
+    public int compareTo(node o) {
+        if(o.f < this.f){
+            return 1;
+        }
+        else if(o.f > this.f){
+            return -1;
+        }
+        else{
+            if(o.getId() < this.id){
+                return 1;
+            }
+            else if(o.getId() > this.id){
+                return -1;
+            }
+            else{
+                return 0;
+            }
+        }
     }
 }
