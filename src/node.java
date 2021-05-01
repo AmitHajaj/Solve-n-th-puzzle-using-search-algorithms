@@ -9,10 +9,12 @@ public class node implements Comparable<node> {
     private int f;
     List<location> locations;
     private static int stateCounter = 0; //Keeps track on the states that created. mainly for comparator.
+    boolean isOut;
 
 
     public node(int[][] state, node prev) {
         this.id = id;
+        this.isOut = false;
         this.state = state;
         this.prevState = prev;
         this.howIGotHere = "";

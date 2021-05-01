@@ -101,9 +101,6 @@ public class Algo {
             // Iterate over all of the allowed operators.
             for(node node: allowed){
                 counter++;
-//                if(O.contains(game.getGoalState())){
-//                    System.out.println("");
-//                }
                 node g = node;
                 // If it is a node that were done exploring it-> ignore.
                 if(C.contains(g) ){
@@ -202,7 +199,131 @@ public class Algo {
         }
     }
 
+    /**
+     * IDASTAR->>...
+     * @param p - the puzzle we work on.
+     * @return List of the path from start state to goal state
+     */
+    public List<node> IDAStar(puzzle p) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+        Stack<node> L= new Stack<>();
+        Hashtable<String, node> H = new Hashtable<>();
+        int count =0;
 
+        int t = p.manhattan(p.getCurrentState());
+        while (t != Integer.MAX_VALUE){
+            int minF = Integer.MAX_VALUE;
+            L.push(p.getCurrentState());
+            H.put(p.getCurrentState().toString(), p.getCurrentState());
+            while(!L.isEmpty()){
+                node n = L.pop();
+                if(n.isOut){
+                   H.remove(n.toString());
+                }
+                else{
+                    n.isOut =true;
+                    L.push(n);
+                    Method m = node.class.getDeclaredMethod("allowedOperators");
+                    List<node> allowed = (List<node>) m.invoke(n);
+                    // Iterate over all of the allowed operators.
+                    for(node node: allowed){
+                        count++;
+                        node.setCostToHere(node.getCostToHere()+n.getCostToHere());
+                        node.setF(node.getCostToHere()+p.manhattan(node));
+                        if(node.getF()>t){
+                            minF = Math.min(minF, node.getF());
+                            continue;
+                        }
+                        if(H.containsKey(node.toString()) && H.get(node.toString()).isOut){
+                            continue;
+                        }
+                        if(H.containsKey(node.toString()) && !H.get(node.toString()).isOut){
+                            if(H.get(node.toString()).getF() > node.getF()){
+                                L.remove(H.get(node.toString()));
+                                H.remove(node.toString());
+                            }
+                            else{
+                                continue;
+                            }
+                        }
+                        if(node.equals(p.getGoalState())){
+                            System.out.println("Num = " + count);
+                            return getPath(node);
+                        }
+                        L.push(node);
+                        H.put(node.toString(), node);
+                    }
+                }
+            }
+            p.getCurrentState().isOut = false;
+            t = minF;
+        }
+        return null;
+    }
+
+    /**
+     * DFBnB->>
+     * @param p, the puzzle we work on
+     * @return
+     */
+    public List<node> DFNBnB(puzzle p) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+        Stack<node> L = new Stack<>();
+        Hashtable<String, node> H = new Hashtable<>();
+
+        L.push(p.getCurrentState());
+        H.put(p.getCurrentState().toString(), p.getCurrentState());
+
+        List<node> result = null;
+        int t = Integer.MAX_VALUE;
+        while(!L.isEmpty()){
+            node n = L.pop();
+            if(n.isOut){
+                H.remove(n.toString());
+            }
+            else{
+                n.isOut = true;
+                L.push(n);
+                Method m = node.class.getDeclaredMethod("allowedOperators");
+                List<node> allowed = (List<node>) m.invoke(n);
+                for(node g:allowed){
+                    g.setCostToHere(n.getCostToHere()+g.getCostToHere());
+                    g.setF(g.getCostToHere() + p.manhattan(g));
+                }
+                Collections.sort(allowed);
+
+                ListIterator<node> itr = allowed.listIterator(allowed.size());
+                while(itr.hasPrevious()){
+                    node g = itr.previous();
+                    if(g.getF() >= t){
+                        itr.remove();
+                        itr.forEachRemaining(node->itr.remove());
+                    }
+                    else if(H.containsKey(g.toString()) && H.get(g.toString()).isOut){
+                        itr.remove();
+                    }
+                    else if(H.containsKey(g.toString()) && !H.get(g.toString()).isOut){
+                        if(H.get(g.toString()).getF() <= g.getF()){
+                            itr.remove();
+                        }
+                        else{
+                            H.remove(g.toString());
+                            L.remove(g);
+                        }
+                    }
+                    else if(g.equals(p.getGoalState())){
+                        t = g.getF();
+                        result = getPath(g);
+                        itr.forEachRemaining(node->itr.remove());
+                    }
+                }
+                Iterator<node> iter = allowed.iterator();
+                iter.forEachRemaining(node-> {
+                                                H.put(iter.next().toString(), iter.next());
+                                                L.push(iter.next());
+                                            });
+            }
+        }
+        return result;
+    }
 
     private node findMinInTable(Hashtable<String, node> t){
         int min = Integer.MAX_VALUE;

@@ -28,7 +28,7 @@ public class Ex1 {
         puzzle p = new puzzle(start, target, priceTable);
         Algo bfs = new Algo();
         try {
-            Stack<node> path = (Stack<node>) bfs.DFID(p.getCurrentState(), p.getGoalState());
+            Stack<node> path = (Stack<node>) bfs.DFNBnB(p);
             while (path != null && !path.isEmpty()){
                 System.out.println(path.pop().howIGotHere);
             }
