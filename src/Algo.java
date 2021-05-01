@@ -290,12 +290,14 @@ public class Algo {
                 }
                 Collections.sort(allowed);
 
-                ListIterator<node> itr = allowed.listIterator(allowed.size());
-                while(itr.hasPrevious()){
-                    node g = itr.previous();
+                ListIterator<node> itr = allowed.listIterator();
+                while(itr.hasNext()){
+                    node g = itr.next();
                     if(g.getF() >= t){
                         itr.remove();
-                        itr.forEachRemaining(node->itr.remove());
+                        while(itr.hasNext() && allowed.contains(itr.next())){
+                            itr.remove();
+                        }
                     }
                     else if(H.containsKey(g.toString()) && H.get(g.toString()).isOut){
                         itr.remove();
@@ -312,14 +314,17 @@ public class Algo {
                     else if(g.equals(p.getGoalState())){
                         t = g.getF();
                         result = getPath(g);
-                        itr.forEachRemaining(node->itr.remove());
+                        while(itr.hasNext() && allowed.contains(itr.next())){
+                            itr.remove();
+                        }
                     }
                 }
-                Iterator<node> iter = allowed.iterator();
-                iter.forEachRemaining(node-> {
-                                                H.put(iter.next().toString(), iter.next());
-                                                L.push(iter.next());
-                                            });
+                ListIterator<node> iter = allowed.listIterator(allowed.size());
+                while(iter.hasPrevious()){
+                    node g = iter.previous();
+                    H.put(g.toString(), g);
+                    L.push(g);
+                }
             }
         }
         return result;
@@ -341,7 +346,7 @@ public class Algo {
         int cost = 0;
         Stack<node> path = new Stack<>();
         while(n.getPrevState() != null){
-            cost+=n.getCostToHere();
+            cost += (n.getCostToHere()-n.getPrevState().getCostToHere()) ;
             path.push(n);
             n = n.getPrevState();
         }
