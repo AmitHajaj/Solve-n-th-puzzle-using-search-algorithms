@@ -7,6 +7,7 @@ public class node implements Comparable<node> {
     String howIGotHere;
     private int costToHere;
     private int f;
+    private int h;
     List<location> locations;
     private static int stateCounter = 0; //Keeps track on the states that created. mainly for comparator.
     boolean isOut;
@@ -39,6 +40,14 @@ public class node implements Comparable<node> {
 
     public int getF() {
         return f;
+    }
+
+    public int getH() {
+        return h;
+    }
+
+    public void setH(node goal) {
+        this.h = this.manhattan(goal);
     }
 
     public void setF(int f) {
@@ -123,21 +132,24 @@ public class node implements Comparable<node> {
         int isJoint = this.isJoint();
         ArrayList<node> temp = new ArrayList<>();
         ArrayList<node> ans = new ArrayList<>();
-        for(location l : this.locations) {
-            temp.add(this.down(l));
-            temp.add(this.up(l));
-            temp.add(this.right(l));
-            temp.add(this.left(l));
+
+        if(isJoint == -1){
+            temp.add(this.twoLeft());
+            temp.add(this.twoRight());
         }
 
-        if(isJoint == 1){
-            temp.add(this.twoDown());
+        else if(isJoint == 1){
             temp.add(this.twoUp());
+            temp.add(this.twoDown());
         }
-        else if(isJoint == -1){
-            temp.add(this.twoRight());
-            temp.add(this.twoLeft());
+
+        for(location l : this.locations) {
+            temp.add(this.left(l));
+            temp.add(this.up(l));
+            temp.add(this.right(l));
+            temp.add(this.down(l));
         }
+
 
         for(node n : temp){
             if(n != null && !ans.contains(n) && !n.equals(this)){
@@ -172,7 +184,7 @@ public class node implements Comparable<node> {
 
             ans.prevState = this;
             ans.howIGotHere = "" + ans.state[l.getY()][l.getX()] + "U";
-            ans.setCostToHere(5);
+            ans.setCostToHere(this.getCostToHere()+5);
 
             if (ans.equals(this.prevState)) {
                 return null;
@@ -207,7 +219,7 @@ public class node implements Comparable<node> {
 
             ans.prevState = this;
             ans.howIGotHere = "" + ans.state[l.getY()][l.getX()] + "D";
-            ans.setCostToHere(5);
+            ans.setCostToHere(this.getCostToHere()+5);
             if(ans.equals(this.prevState)) {
                 return null;
             }
@@ -242,7 +254,7 @@ public class node implements Comparable<node> {
 
             ans.prevState = this;
             ans.howIGotHere = "" + ans.state[l.getY()][l.getX()] + "R";
-            ans.setCostToHere(5);
+            ans.setCostToHere(this.getCostToHere()+5);
             if(ans.equals(this.prevState)) {
                 return null;
             }
@@ -276,7 +288,7 @@ public class node implements Comparable<node> {
 
             ans.prevState = this;
             ans.howIGotHere = "" + ans.state[l.getY()][l.getX()] + "L";
-            ans.setCostToHere(5);
+            ans.setCostToHere(this.getCostToHere()+5);
             if(ans.equals(this.prevState)) {
                 return null;
             }
@@ -312,7 +324,7 @@ public class node implements Comparable<node> {
 
             ans.prevState = this;
             ans.howIGotHere = "" + ans.state[first.getY()][first.getX()] + "&" + ans.state[second.getY()][second.getX()] + "L";
-            ans.setCostToHere(8);
+            ans.setCostToHere(this.getCostToHere()+8);
             if(ans.equals(this.prevState)) {
                 return null;
             }
@@ -348,7 +360,7 @@ public class node implements Comparable<node> {
 
             ans.prevState = this;
             ans.howIGotHere = "" + ans.state[first.getY()][first.getX()] + "&" + ans.state[second.getY()][second.getX()] + "R";
-            ans.setCostToHere(8);
+            ans.setCostToHere(this.getCostToHere()+8);
             if(ans.equals(this.prevState)) {
                 return null;
             }
@@ -384,7 +396,7 @@ public class node implements Comparable<node> {
 
             ans.prevState = this;
             ans.howIGotHere = "" + ans.state[first.getY()][first.getX()] + "&" + ans.state[second.getY()][second.getX()] + "D";
-            ans.setCostToHere(7);
+            ans.setCostToHere(this.getCostToHere()+7);
             if(ans.equals(this.prevState)) {
                 return null;
             }
@@ -421,7 +433,7 @@ public class node implements Comparable<node> {
 
             ans.prevState = this;
             ans.howIGotHere = "" + ans.state[first.getY()][first.getX()] + "&" + ans.state[second.getY()][second.getX()] + "U";
-            ans.setCostToHere(7);
+            ans.setCostToHere(this.getCostToHere()+7);
             if(ans.equals(this.prevState)) {
                 return null;
             }
@@ -489,14 +501,62 @@ public class node implements Comparable<node> {
         }
         else{
             if(o.getId() < this.id){
-                return 1;
+                return -1;
             }
             else if(o.getId() > this.id){
-                return -1;
+                return 1;
             }
             else{
                 return 0;
             }
         }
+    }
+
+    /**
+     * heuristic function which sums all misplaced tiles steps to get to goal state.
+     * @return the total sum calculated as described.
+     */
+    private int manhattan(node goal){
+        int cost = 0;
+        for(int i = 0; i<this.getState().length; i++) {
+            for(int j = 0; j< this.getState()[i].length; j++){
+                if(this.getState()[i][j] != (i*this.getState()[i].length + (j+1)) && this.getState()[i][j] != -1){
+                    cost += Math.abs(i - getRow(this.getState()[i][j], goal)) + Math.abs(j - getCol(this.getState()[i][j], goal));
+                }
+            }
+        }
+        return cost;
+    }
+
+    /**
+     * helper to get the expected row of a value at the goal state.
+     * @param value the value we search.
+     * @return the expected row.
+     */
+    public int getRow(int value, node goal){
+        for(int i = 0; i<goal.getState().length; i++) {
+            for(int j = 0; j< goal.getState()[i].length; j++){
+                if(goal.getState()[i][j] == value ) {
+                    return i;
+                }
+            }
+        }
+        return -1;
+    }
+
+    /**
+     * helper to get the expected column of a value at the goal state.
+     * @param value the value we search.
+     * @return the expected column.
+     */
+    public int getCol(int value, node goal){
+        for(int i = 0; i<goal.getState().length; i++) {
+            for(int j = 0; j< goal.getState()[i].length; j++){
+                if(goal.getState()[i][j] == value ) {
+                    return j;
+                }
+            }
+        }
+        return -1;
     }
 }

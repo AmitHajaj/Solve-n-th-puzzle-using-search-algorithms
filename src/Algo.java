@@ -3,6 +3,7 @@ import java.lang.reflect.Method;
 import java.util.*;
 
 public class Algo {
+    static int counter = 0;
     private HashSet<String> operators = new HashSet<>();
 
     public Algo() {
@@ -22,11 +23,11 @@ public class Algo {
         LinkedList<node> L = new LinkedList<>();
         Hashtable<String, node> l = new Hashtable<>();
         L.add(start);
-        int counter = 0;
+        l.put(start.toString(), start);
+        int counter = 1;
 
         Hashtable<String, node> C = new Hashtable<>();
 
-        Class nodeClass = node.class;
         while (!L.isEmpty()){
             node n = L.removeFirst();
             l.remove(n);
@@ -36,16 +37,14 @@ public class Algo {
             List<node> allowed = (List<node>) m.invoke(n);
             for(node node: allowed){
                 counter++;
-                if(node == null){
-                    continue;
-                }
-                if(C.get(node.toString()) == null && l.get(node.toString()) == null){
+                if(!C.containsKey(node.toString()) && !l.containsKey(node.toString())){
                     if(node.equals(goal)){
-                        System.out.println("Number of nodes created is:  " + counter);
+                        System.out.println("Num:  " + counter);
                         return getPath(node);
                     }
                     else{
                         L.add(node);
+                        l.put(node.toString(), node);
                     }
                 }
             }
@@ -75,7 +74,7 @@ public class Algo {
     }
 
     /**
-     * Dijkstra->>
+     * AStar->>
      * @param game
      * @return
      * @throws NoSuchMethodException
@@ -114,6 +113,7 @@ public class Algo {
                 else if(!O1.contains(g)){
                     g.setCostToHere(g.getCostToHere() + q.getCostToHere());
                     g.setF(g.getCostToHere() + game.manhattan(g));
+                    O.remove(g);
                     O.add(g);
                     O1.put(g.toString(), g);
                 }
@@ -133,6 +133,54 @@ public class Algo {
     }
 
     /**
+     * AStar->>
+     * @param game
+     * @return
+     * @throws NoSuchMethodException
+     * @throws InvocationTargetException
+     * @throws IllegalAccessException
+     */
+    public List<node> AStar2(puzzle game) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+        int counter = 1;
+        Hashtable<String, node> C = new Hashtable<>();
+        PriorityQueue<node> L = new PriorityQueue<>();
+        Hashtable<String, node> L1 = new Hashtable<>();
+
+        L.add(game.getCurrentState());
+        L1.put(game.getCurrentState().toString(), game.getCurrentState());
+        while(!L.isEmpty()){
+            node n = L.poll();
+            n.setH(game.getGoalState());
+            if(n.equals(game.getGoalState())){
+                System.out.println("Num: " + counter);
+                return getPath(n);
+            }
+            C.put(n.toString(), n);
+
+            Method m = node.class.getDeclaredMethod("allowedOperators");
+            List<node> allowed = (List<node>) m.invoke(n);
+            // Iterate over all of the allowed operators.
+            for(node node: allowed) {
+                counter++;
+                node x = node;
+                x.setH(game.getGoalState());
+                x.setF(x.getCostToHere()+x.getH());
+                if(!C.containsKey(x.toString()) && !L1.containsKey(x.toString())){
+                    L.add(x);
+                    L1.put(x.toString(), x);
+                }
+                else if(L1.containsKey(x.toString())){
+                    if(L1.get(x.toString()).getF() > x.getF()){
+                        L.remove(x);
+                        L.add(x);
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
      * DFID->>
      * @param start
      * @param goal
@@ -146,6 +194,7 @@ public class Algo {
             Hashtable<String, node> H = new Hashtable<>();
             String result = limited_DFS(start, goal, i, H);
             if(result != "cutOff"){
+                System.out.println(counter);
                 return getPath(H.get(result));
             }
         }
@@ -181,6 +230,7 @@ public class Algo {
                 if(hash.containsKey(node.toString())){
                     continue;
                 }
+                counter++;
                 String result = limited_DFS(node, goal, limit-1, hash);
                 if(result == "cutOff"){
                     isCutOff = true;
