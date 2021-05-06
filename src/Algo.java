@@ -81,77 +81,78 @@ public class Algo {
      * @throws InvocationTargetException
      * @throws IllegalAccessException
      */
-    public List<node> AStar(puzzle game) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
-        Hashtable<String, node> C = new Hashtable<>();
-        PriorityQueue<node> O = new PriorityQueue<>();
-        Hashtable<String, node> O1 = new Hashtable<>();
-        O.add(game.getCurrentState());
-        O1.put(game.getCurrentState().toString(), game.getCurrentState());
-
-        int counter=0;
-
-        while (!O.isEmpty()){
-            node q = O.poll(); // Get the cheapest state to explore.
-            O1.remove(q.toString(), q);
-            C.put(q.toString(), q); // Put it in the closed list.
-
-            Method m = node.class.getDeclaredMethod("allowedOperators");
-            List<node> allowed = (List<node>) m.invoke(q);
-            // Iterate over all of the allowed operators.
-            for(node node: allowed){
-                counter++;
-                node g = node;
-                // If it is a node that were done exploring it-> ignore.
-                if(C.contains(g) ){
-                    continue;
-                }
-                else if(g.equals(game.getGoalState())){
-                    System.out.println("Number of nodes created is:  " + counter);
-                    System.out.println("Cost: "+(g.getPrevState().getF()+g.getCostToHere()) );
-                    return getPath(g);
-                }
-                else if(!O1.contains(g)){
-                    g.setCostToHere(g.getCostToHere() + q.getCostToHere());
-                    g.setF(g.getCostToHere() + game.manhattan(g));
-                    O.remove(g);
-                    O.add(g);
-                    O1.put(g.toString(), g);
-                }
-                else if(O1.contains(g)){
-                    g = O1.get(g.toString());
-                    // If this child is already in the open list, we check if it is closer from here then before.
-                    if(g.getCostToHere() > node.getCostToHere() + q.getCostToHere()){
-                        g.setCostToHere(node.getCostToHere() + q.getCostToHere());
-                        g.setF(g.getCostToHere() + game.manhattan(g));
-                        g.setPrevState(q);
-                    }
-                }
-            }
-
-        }
-        return null;
-    }
+//    public List<node> AStar(puzzle game) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+//        Hashtable<String, node> C = new Hashtable<>();
+//        PriorityQueue<node> O = new PriorityQueue<>();
+//        Hashtable<String, node> O1 = new Hashtable<>();
+//        O.add(game.getCurrentState());
+//        O1.put(game.getCurrentState().toString(), game.getCurrentState());
+//
+//        int counter=0;
+//
+//        while (!O.isEmpty()){
+//            node q = O.poll(); // Get the cheapest state to explore.
+//            O1.remove(q.toString(), q);
+//            C.put(q.toString(), q); // Put it in the closed list.
+//
+//            Method m = node.class.getDeclaredMethod("allowedOperators");
+//            List<node> allowed = (List<node>) m.invoke(q);
+//            // Iterate over all of the allowed operators.
+//            for(node node: allowed){
+//                counter++;
+//                node g = node;
+//                // If it is a node that were done exploring it-> ignore.
+//                if(C.contains(g) ){
+//                    continue;
+//                }
+//                else if(g.equals(game.getGoalState())){
+//                    System.out.println("Number of nodes created is:  " + counter);
+//                    System.out.println("Cost: "+(g.getPrevState().getF()+g.getCostToHere()) );
+//                    return getPath(g);
+//                }
+//                else if(!O1.contains(g)){
+//                    g.setCostToHere(g.getCostToHere() + q.getCostToHere());
+//                    g.setF(g.getCostToHere() + game.manhattan(g));
+//                    O.remove(g);
+//                    O.add(g);
+//                    O1.put(g.toString(), g);
+//                }
+//                else if(O1.contains(g)){
+//                    g = O1.get(g.toString());
+//                    // If this child is already in the open list, we check if it is closer from here then before.
+//                    if(g.getCostToHere() > node.getCostToHere() + q.getCostToHere()){
+//                        g.setCostToHere(node.getCostToHere() + q.getCostToHere());
+//                        g.setF(g.getCostToHere() + game.manhattan(g));
+//                        g.setPrevState(q);
+//                    }
+//                }
+//            }
+//
+//        }
+//        return null;
+//    }
 
     /**
      * AStar->>
-     * @param game
+     * @param start, the starting node
+     * @param goal, the target node
      * @return
      * @throws NoSuchMethodException
      * @throws InvocationTargetException
      * @throws IllegalAccessException
      */
-    public List<node> AStar2(puzzle game) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+    public List<node> AStar(node start, node goal) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
         int counter = 1;
         Hashtable<String, node> C = new Hashtable<>();
         PriorityQueue<node> L = new PriorityQueue<>();
         Hashtable<String, node> L1 = new Hashtable<>();
 
-        L.add(game.getCurrentState());
-        L1.put(game.getCurrentState().toString(), game.getCurrentState());
+        L.add(start);
+        L1.put(start.toString(), start);
         while(!L.isEmpty()){
             node n = L.poll();
-            n.setH(game.getGoalState());
-            if(n.equals(game.getGoalState())){
+            n.setH(goal);
+            if(n.equals(goal)){
                 System.out.println("Num: " + counter);
                 return getPath(n);
             }
@@ -163,7 +164,7 @@ public class Algo {
             for(node node: allowed) {
                 counter++;
                 node x = node;
-                x.setH(game.getGoalState());
+                x.setH(goal);
                 x.setF(x.getCostToHere()+x.getH());
                 if(!C.containsKey(x.toString()) && !L1.containsKey(x.toString())){
                     L.add(x);
@@ -277,7 +278,7 @@ public class Algo {
                     // Iterate over all of the allowed operators.
                     for(node node: allowed){
                         count++;
-                        node.setCostToHere(node.getCostToHere()+n.getCostToHere());
+//                        node.setCostToHere(node.getCostToHere()+n.getCostToHere());
                         node.setF(node.getCostToHere()+p.manhattan(node));
                         if(node.getF()>t){
                             minF = Math.min(minF, node.getF());
@@ -323,7 +324,7 @@ public class Algo {
         H.put(p.getCurrentState().toString(), p.getCurrentState());
 
         List<node> result = null;
-        int t = Integer.MAX_VALUE;
+        int t = Integer.MAX_VALUE, cnt = 1;
         while(!L.isEmpty()){
             node n = L.pop();
             if(n.isOut){
@@ -334,14 +335,16 @@ public class Algo {
                 L.push(n);
                 Method m = node.class.getDeclaredMethod("allowedOperators");
                 List<node> allowed = (List<node>) m.invoke(n);
-                for(node g:allowed){
-                    g.setCostToHere(n.getCostToHere()+g.getCostToHere());
+                for(node g : allowed){
+//                    g.setCostToHere(n.getCostToHere()+g.getCostToHere());
                     g.setF(g.getCostToHere() + p.manhattan(g));
                 }
                 Collections.sort(allowed);
 
                 ListIterator<node> itr = allowed.listIterator();
+
                 while(itr.hasNext()){
+                    cnt++;
                     node g = itr.next();
                     if(g.getF() >= t){
                         itr.remove();
@@ -363,6 +366,7 @@ public class Algo {
                     }
                     else if(g.equals(p.getGoalState())){
                         t = g.getF();
+                        System.out.println("Num: "+cnt);
                         result = getPath(g);
                         while(itr.hasNext() && allowed.contains(itr.next())){
                             itr.remove();
