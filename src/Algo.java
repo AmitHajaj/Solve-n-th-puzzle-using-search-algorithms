@@ -1,3 +1,7 @@
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
@@ -5,6 +9,7 @@ import java.util.*;
 public class Algo {
     static int counter = 0;
     private HashSet<String> operators = new HashSet<>();
+    File output;
 
     public Algo() {
         this.operators = new HashSet<>();
@@ -12,19 +17,18 @@ public class Algo {
 
     /**
      * BFS->>
-     * @param start
-     * @param goal
+     * @param p, the puzzle we work on.
      * @return
      * @throws InvocationTargetException
      * @throws IllegalAccessException
      * @throws NoSuchMethodException
      */
-    public List<node> BFS_V(node start, node goal) throws InvocationTargetException, IllegalAccessException, NoSuchMethodException {
+    public File BFS(puzzle p) throws InvocationTargetException, IllegalAccessException, NoSuchMethodException, IOException {
+        node start = p.getCurrentState(), goal = p.getGoalState();
         LinkedList<node> L = new LinkedList<>();
         Hashtable<String, node> l = new Hashtable<>();
         L.add(start);
         l.put(start.toString(), start);
-        int counter = 1;
 
         Hashtable<String, node> C = new Hashtable<>();
 
@@ -35,11 +39,17 @@ public class Algo {
 
             Method m = node.class.getDeclaredMethod("allowedOperators");
             List<node> allowed = (List<node>) m.invoke(n);
+            //Before exploring them, check if one of them is the goal.
+            for(node node: allowed){
+                if(node.equals(goal)){
+                    return getPath(node);
+                }
+            }
+
             for(node node: allowed){
                 counter++;
                 if(!C.containsKey(node.toString()) && !l.containsKey(node.toString())){
                     if(node.equals(goal)){
-                        System.out.println("Num:  " + counter);
                         return getPath(node);
                     }
                     else{
@@ -48,112 +58,31 @@ public class Algo {
                     }
                 }
             }
-
-//            for(Method operator: nodeClass.getMethods()){
-//                boolean isOperator = operator.getName() == "allowedOperators";
-//                if(isOperator) {
-//                    for (int i = 0; i<2 && n.locations[i] != null; i++ ) {
-//                        node g = (node) operator.invoke(n, n.locations[i]);
-//                        //If it is not allowed operator
-//                        if(g == null){
-//                            continue;
-//                        }
-//                        if(C.get(g.toString()) == null && l.get(g.toString()) == null){
-//                            if(g.equals(goal)){
-//                                return getPath(g);
-//                            }
-//                            else{
-//                                L.add(g);
-//                            }
-//                        }
-//                    }
-//                }
-//            }
         }
         return null;
     }
 
     /**
      * AStar->>
-     * @param game
+     * @param p, the puzzle we work on
      * @return
      * @throws NoSuchMethodException
      * @throws InvocationTargetException
      * @throws IllegalAccessException
      */
-//    public List<node> AStar(puzzle game) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
-//        Hashtable<String, node> C = new Hashtable<>();
-//        PriorityQueue<node> O = new PriorityQueue<>();
-//        Hashtable<String, node> O1 = new Hashtable<>();
-//        O.add(game.getCurrentState());
-//        O1.put(game.getCurrentState().toString(), game.getCurrentState());
-//
-//        int counter=0;
-//
-//        while (!O.isEmpty()){
-//            node q = O.poll(); // Get the cheapest state to explore.
-//            O1.remove(q.toString(), q);
-//            C.put(q.toString(), q); // Put it in the closed list.
-//
-//            Method m = node.class.getDeclaredMethod("allowedOperators");
-//            List<node> allowed = (List<node>) m.invoke(q);
-//            // Iterate over all of the allowed operators.
-//            for(node node: allowed){
-//                counter++;
-//                node g = node;
-//                // If it is a node that were done exploring it-> ignore.
-//                if(C.contains(g) ){
-//                    continue;
-//                }
-//                else if(g.equals(game.getGoalState())){
-//                    System.out.println("Number of nodes created is:  " + counter);
-//                    System.out.println("Cost: "+(g.getPrevState().getF()+g.getCostToHere()) );
-//                    return getPath(g);
-//                }
-//                else if(!O1.contains(g)){
-//                    g.setCostToHere(g.getCostToHere() + q.getCostToHere());
-//                    g.setF(g.getCostToHere() + game.manhattan(g));
-//                    O.remove(g);
-//                    O.add(g);
-//                    O1.put(g.toString(), g);
-//                }
-//                else if(O1.contains(g)){
-//                    g = O1.get(g.toString());
-//                    // If this child is already in the open list, we check if it is closer from here then before.
-//                    if(g.getCostToHere() > node.getCostToHere() + q.getCostToHere()){
-//                        g.setCostToHere(node.getCostToHere() + q.getCostToHere());
-//                        g.setF(g.getCostToHere() + game.manhattan(g));
-//                        g.setPrevState(q);
-//                    }
-//                }
-//            }
-//
-//        }
-//        return null;
-//    }
-
-    /**
-     * AStar->>
-     * @param start, the starting node
-     * @param goal, the target node
-     * @return
-     * @throws NoSuchMethodException
-     * @throws InvocationTargetException
-     * @throws IllegalAccessException
-     */
-    public List<node> AStar(node start, node goal) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
-        int counter = 1;
+    public File AStar(puzzle p) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, IOException {
+        node start = p.getCurrentState(), goal = p.getGoalState();
         Hashtable<String, node> C = new Hashtable<>();
         PriorityQueue<node> L = new PriorityQueue<>();
         Hashtable<String, node> L1 = new Hashtable<>();
+
+        start.setH(goal);
 
         L.add(start);
         L1.put(start.toString(), start);
         while(!L.isEmpty()){
             node n = L.poll();
-            n.setH(goal);
             if(n.equals(goal)){
-                System.out.println("Num: " + counter);
                 return getPath(n);
             }
             C.put(n.toString(), n);
@@ -174,6 +103,7 @@ public class Algo {
                     if(L1.get(x.toString()).getF() > x.getF()){
                         L.remove(x);
                         L.add(x);
+                        L1.put(x.toString(), x);
                     }
                 }
             }
@@ -183,19 +113,18 @@ public class Algo {
 
     /**
      * DFID->>
-     * @param start
-     * @param goal
+     * @param p, the puzzle we work on
      * @return
      * @throws NoSuchMethodException
      * @throws IllegalAccessException
      * @throws InvocationTargetException
      */
-    public List<node> DFID(node start, node goal) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
+    public File DFID(puzzle p) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, IOException {
+        node start = p.getCurrentState(), goal = p.getGoalState();
         for(int i=0; i<Integer.MAX_VALUE; i++){
             Hashtable<String, node> H = new Hashtable<>();
             String result = limited_DFS(start, goal, i, H);
             if(result != "cutOff"){
-                System.out.println(counter);
                 return getPath(H.get(result));
             }
         }
@@ -255,31 +184,33 @@ public class Algo {
      * @param p - the puzzle we work on.
      * @return List of the path from start state to goal state
      */
-    public List<node> IDAStar(puzzle p) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+    public File IDAStar(puzzle p) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, IOException {
+        node start = p.getCurrentState();
+        node goal = p.getGoalState();
         Stack<node> L= new Stack<>();
         Hashtable<String, node> H = new Hashtable<>();
-        int count =0;
+        start.setH(goal);
+        int t = start.getH();
 
-        int t = p.manhattan(p.getCurrentState());
         while (t != Integer.MAX_VALUE){
             int minF = Integer.MAX_VALUE;
-            L.push(p.getCurrentState());
-            H.put(p.getCurrentState().toString(), p.getCurrentState());
+            L.push(start);
+            H.put(start.toString(), start);
             while(!L.isEmpty()){
                 node n = L.pop();
                 if(n.isOut){
                    H.remove(n.toString());
                 }
                 else{
-                    n.isOut =true;
+                    n.isOut = true;
                     L.push(n);
                     Method m = node.class.getDeclaredMethod("allowedOperators");
                     List<node> allowed = (List<node>) m.invoke(n);
                     // Iterate over all of the allowed operators.
                     for(node node: allowed){
-                        count++;
-//                        node.setCostToHere(node.getCostToHere()+n.getCostToHere());
-                        node.setF(node.getCostToHere()+p.manhattan(node));
+                        counter++;
+                        node.setH(goal);
+                        node.setF(node.getCostToHere()+node.getH());
                         if(node.getF()>t){
                             minF = Math.min(minF, node.getF());
                             continue;
@@ -296,8 +227,7 @@ public class Algo {
                                 continue;
                             }
                         }
-                        if(node.equals(p.getGoalState())){
-                            System.out.println("Num = " + count);
+                        if(node.equals(goal)){
                             return getPath(node);
                         }
                         L.push(node);
@@ -305,7 +235,7 @@ public class Algo {
                     }
                 }
             }
-            p.getCurrentState().isOut = false;
+            start.isOut = false;
             t = minF;
         }
         return null;
@@ -316,14 +246,14 @@ public class Algo {
      * @param p, the puzzle we work on
      * @return
      */
-    public List<node> DFNBnB(puzzle p) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+    public File DFBnB(puzzle p) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, IOException {
         Stack<node> L = new Stack<>();
         Hashtable<String, node> H = new Hashtable<>();
 
         L.push(p.getCurrentState());
         H.put(p.getCurrentState().toString(), p.getCurrentState());
 
-        List<node> result = null;
+        File result = null;
         int t = Integer.MAX_VALUE, cnt = 1;
         while(!L.isEmpty()){
             node n = L.pop();
@@ -336,15 +266,15 @@ public class Algo {
                 Method m = node.class.getDeclaredMethod("allowedOperators");
                 List<node> allowed = (List<node>) m.invoke(n);
                 for(node g : allowed){
-//                    g.setCostToHere(n.getCostToHere()+g.getCostToHere());
-                    g.setF(g.getCostToHere() + p.manhattan(g));
+                    g.setH(p.getGoalState());
+                    g.setF(g.getCostToHere() + g.getH());
                 }
                 Collections.sort(allowed);
 
                 ListIterator<node> itr = allowed.listIterator();
 
                 while(itr.hasNext()){
-                    cnt++;
+                    counter++;
                     node g = itr.next();
                     if(g.getF() >= t){
                         itr.remove();
@@ -366,7 +296,6 @@ public class Algo {
                     }
                     else if(g.equals(p.getGoalState())){
                         t = g.getF();
-                        System.out.println("Num: "+cnt);
                         result = getPath(g);
                         while(itr.hasNext() && allowed.contains(itr.next())){
                             itr.remove();
@@ -395,7 +324,13 @@ public class Algo {
         return minNode;
     }
 
-    private static Stack<node> getPath(node target){
+    private static File getPath(node target) throws IOException {
+        File out = new File("output.txt");
+        FileWriter fw = new FileWriter(out);
+        PrintWriter pw = new PrintWriter(fw);
+
+        String rout = "";
+
         node n = target;
         int cost = 0;
         Stack<node> path = new Stack<>();
@@ -404,8 +339,23 @@ public class Algo {
             path.push(n);
             n = n.getPrevState();
         }
-        System.out.println("Cost:  "+cost);
-        return path;
+
+        //print the path
+        while (!path.isEmpty()){
+            node temp = path.pop();
+            if(path.isEmpty()){
+               rout = rout.concat(temp.howIGotHere);
+            }
+            else {
+                rout = rout.concat(temp.howIGotHere + "-");
+            }
+        }
+        pw.println(rout);
+        pw.println("Num: "+counter);
+        counter = 0;
+        pw.println("Cost:  "+cost);
+        pw.close();
+        return out;
     }
 
     private String printPath(Stack<node> path){

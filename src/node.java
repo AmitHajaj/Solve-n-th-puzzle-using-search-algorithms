@@ -36,6 +36,7 @@ public class node implements Comparable<node> {
                 }
             }
         }
+        Collections.sort(this.locations);
     }
 
     public int getF() {
@@ -47,7 +48,7 @@ public class node implements Comparable<node> {
     }
 
     public void setH(node goal) {
-        this.h = this.manhattan(goal);
+        this.h = this.manhattan2(goal);
     }
 
     public void setF(int f) {
@@ -143,11 +144,11 @@ public class node implements Comparable<node> {
             temp.add(this.twoDown());
         }
 
-        for(location l : this.locations) {
-            temp.add(this.left(l));
-            temp.add(this.up(l));
-            temp.add(this.right(l));
-            temp.add(this.down(l));
+        for(int i=0; i<this.locations.size(); i++) {
+            temp.add(this.left(this.locations.get(i)));
+            temp.add(this.up(this.locations.get(i)));
+            temp.add(this.right(this.locations.get(i)));
+            temp.add(this.down(this.locations.get(i)));
         }
 
 
@@ -324,7 +325,7 @@ public class node implements Comparable<node> {
 
             ans.prevState = this;
             ans.howIGotHere = "" + ans.state[first.getY()][first.getX()] + "&" + ans.state[second.getY()][second.getX()] + "L";
-            ans.setCostToHere(this.getCostToHere()+8);
+            ans.setCostToHere(this.getCostToHere()+6);
             if(ans.equals(this.prevState)) {
                 return null;
             }
@@ -360,7 +361,7 @@ public class node implements Comparable<node> {
 
             ans.prevState = this;
             ans.howIGotHere = "" + ans.state[first.getY()][first.getX()] + "&" + ans.state[second.getY()][second.getX()] + "R";
-            ans.setCostToHere(this.getCostToHere()+8);
+            ans.setCostToHere(this.getCostToHere()+6);
             if(ans.equals(this.prevState)) {
                 return null;
             }
@@ -432,7 +433,15 @@ public class node implements Comparable<node> {
             ans.locations.get(1).setY(first.getY()+1);
 
             ans.prevState = this;
+            if(first.compareTo(second) > 0){
+                location temp = second;
+                second = first;
+                first = temp;
+            }
             ans.howIGotHere = "" + ans.state[first.getY()][first.getX()] + "&" + ans.state[second.getY()][second.getX()] + "U";
+            if(ans.howIGotHere.equals("5&2U")){
+                System.out.println("");
+            }
             ans.setCostToHere(this.getCostToHere()+7);
             if(ans.equals(this.prevState)) {
                 return null;
@@ -517,11 +526,209 @@ public class node implements Comparable<node> {
      * @return the total sum calculated as described.
      */
     private int manhattan(node goal){
-        int cost = 0;
-        for(int i = 0; i<this.getState().length; i++) {
-            for(int j = 0; j< this.getState()[i].length; j++){
-                if(this.getState()[i][j] != (i*this.getState()[i].length + (j+1)) && this.getState()[i][j] != -1){
+        int normalCost = 0;
+        int doubleMoveCost = 0;
+        int isJoint = this.isJoint();
+        double cost =0;
+
+        // cam move horizontally.
+        if(isJoint == -1){
+            //If it can move only right.
+            if(this.locations.get(0).getX() == 0){
+                //If we can move 2 goal state neighbors.
+                if(this.getState()[this.locations.get(1).getY()][1] - this.getState()[this.locations.get(0).getY()][1] == this.getState()[0].length){
+                    //Start calculate the Manhattan distance.
+                    for (int i = 0; i < this.getState().length; i++) {
+                        for (int j = 0; j < this.getState()[i].length; j++) {
+                            if (this.getState()[i][j] != (i * this.getState()[i].length + (j + 1)) && this.getState()[i][j] != -1) {
+                                if(j == 1 && (i == this.locations.get(0).getY() || i == this.locations.get(1).getY())){
+                                    cost += (3 * Math.abs(i - getRow(this.getState()[i][j], goal)) + Math.abs(j - getCol(this.getState()[i][j], goal)));
+                                }
+                                else {
+                                    cost += (5 * Math.abs(i - getRow(this.getState()[i][j], goal)) + Math.abs(j - getCol(this.getState()[i][j], goal)));
+                                }
+                            }
+                        }
+                    }
+                    doubleMoveCost = (int)cost;
+                    return doubleMoveCost;
+                }
+            }
+            // If we can move only left.
+            else if(this.locations.get(0).getX() == this.getState()[0].length-1){
+                //If we can move 2 goal state neighbors.
+                if(this.getState()[this.locations.get(1).getY()][this.locations.get(1).getX()-1] - this.getState()[this.locations.get(0).getY()][this.locations.get(0).getX()-1] == this.getState()[0].length){
+                    //Start calculate the Manhattan distance.
+                    for (int i = 0; i < this.getState().length; i++) {
+                        for (int j = 0; j < this.getState()[i].length; j++) {
+                            if (this.getState()[i][j] != (i * this.getState()[i].length + (j + 1)) && this.getState()[i][j] != -1) {
+                                if(j == locations.get(0).getX()-1 && (i == this.locations.get(0).getY() || i == this.locations.get(1).getY())){
+                                    cost += (3 * Math.abs(i - getRow(this.getState()[i][j], goal)) + Math.abs(j - getCol(this.getState()[i][j], goal)));
+                                }
+                                else {
+                                    cost += (5 * Math.abs(i - getRow(this.getState()[i][j], goal)) + Math.abs(j - getCol(this.getState()[i][j], goal)));
+                                }
+                            }
+                        }
+                    }
+                    doubleMoveCost = (int)cost;
+                    return doubleMoveCost;
+                }
+            }
+            //If we can move left and right.
+            else{
+                //If we can move 2 goal state neighbors.
+                if(this.getState()[this.locations.get(1).getY()][this.locations.get(1).getX()-1] - this.getState()[this.locations.get(0).getY()][this.locations.get(0).getX()-1] == this.getState()[0].length ||
+                        this.getState()[this.locations.get(1).getY()][this.locations.get(1).getX()+1] - this.getState()[this.locations.get(0).getY()][this.locations.get(0).getX()+1] == this.getState()[0].length){
+                    //Start calculate the Manhattan distance.
+                    for (int i = 0; i < this.getState().length; i++) {
+                        for (int j = 0; j < this.getState()[i].length; j++) {
+                            if (this.getState()[i][j] != (i * this.getState()[i].length + (j + 1)) && this.getState()[i][j] != -1) {
+                                if(j == locations.get(0).getX()-1 && (i == this.locations.get(0).getY() || i == this.locations.get(1).getY()) ||
+                                        j == locations.get(0).getX()+1 && (i == this.locations.get(0).getY() || i == this.locations.get(1).getY())){
+                                    cost += (3 * Math.abs(i - getRow(this.getState()[i][j], goal)) + Math.abs(j - getCol(this.getState()[i][j], goal)));
+                                }
+                                else {
+                                    cost += (5 * Math.abs(i - getRow(this.getState()[i][j], goal)) + Math.abs(j - getCol(this.getState()[i][j], goal)));
+                                }
+                            }
+                        }
+                    }
+                    doubleMoveCost = (int)cost;
+                    return doubleMoveCost;
+                }
+            }
+        }
+        //can move vertically
+        else if(isJoint == 1){
+            //If it can move only down.
+            if(this.locations.get(0).getY() == 0){
+                //If we can move 2 goal state neighbors.
+                if(this.getState()[this.locations.get(0).getY()+1][this.locations.get(1).getX()] - this.getState()[this.locations.get(1).getY()+1][this.locations.get(0).getX()] == 1){
+                    //Start calculate the Manhattan distance.
+                    for (int i = 0; i < this.getState().length; i++) {
+                        for (int j = 0; j < this.getState()[i].length; j++) {
+                            if (this.getState()[i][j] != (i * this.getState()[i].length + (j + 1)) && this.getState()[i][j] != -1) {
+                                if(i == 1 && (j == this.locations.get(0).getX() || j == this.locations.get(1).getX())){
+                                    cost += (3.5 * Math.abs(i - getRow(this.getState()[i][j], goal)) + Math.abs(j - getCol(this.getState()[i][j], goal)));
+                                }
+                                else {
+                                    cost += (5 * Math.abs(i - getRow(this.getState()[i][j], goal)) + Math.abs(j - getCol(this.getState()[i][j], goal)));
+                                }
+                            }
+                        }
+                    }
+                    doubleMoveCost = (int)cost;
+                    return doubleMoveCost;
+                }
+            }
+            //If it can move only up.
+            else if(this.locations.get(0).getY() == this.getState().length-1){
+                //If we can move 2 goal state neighbors.
+                if(this.getState()[this.locations.get(1).getY()-1][this.locations.get(1).getX()] - this.getState()[this.locations.get(0).getY()-1][this.locations.get(0).getX()] == 1){
+                    //Start calculate the Manhattan distance.
+                    for (int i = 0; i < this.getState().length; i++) {
+                        for (int j = 0; j < this.getState()[i].length; j++) {
+                            if (this.getState()[i][j] != (i * this.getState()[i].length + (j + 1)) && this.getState()[i][j] != -1) {
+                                if(i == this.locations.get(0).getY()-1 && (j == this.locations.get(0).getX() || j == this.locations.get(1).getX())){
+                                    cost += (3.5 * Math.abs(i - getRow(this.getState()[i][j], goal)) + Math.abs(j - getCol(this.getState()[i][j], goal)));
+                                }
+                                else {
+                                    cost += (5 * Math.abs(i - getRow(this.getState()[i][j], goal)) + Math.abs(j - getCol(this.getState()[i][j], goal)));
+                                }
+                            }
+                        }
+                    }
+                    doubleMoveCost = (int)cost;
+                    return doubleMoveCost;
+                }
+            }
+            //If it can move up and down.
+            else{
+                //If we can move 2 goal state neighbors.
+                if(this.getState()[this.locations.get(1).getY()-1][this.locations.get(1).getX()] - this.getState()[this.locations.get(0).getY()-1][this.locations.get(0).getX()] == 1 ||
+                        this.getState()[this.locations.get(1).getY()+1][this.locations.get(1).getX()] - this.getState()[this.locations.get(0).getY()+1][this.locations.get(0).getX()] == 1){
+                    //Start calculate the Manhattan distance.
+                    for (int i = 0; i < this.getState().length; i++) {
+                        for (int j = 0; j < this.getState()[i].length; j++) {
+                            if (this.getState()[i][j] != (i * this.getState()[i].length + (j + 1)) && this.getState()[i][j] != -1) {
+                                if(i == this.locations.get(0).getY()-1 && (j == this.locations.get(0).getX() || j == this.locations.get(1).getX()) ||
+                                        i == this.locations.get(0).getY()+1 && (j == this.locations.get(0).getX() || j == this.locations.get(1).getX())){
+                                    cost += (3.5 * Math.abs(i - getRow(this.getState()[i][j], goal)) + Math.abs(j - getCol(this.getState()[i][j], goal)));
+                                }
+                                else {
+                                    cost += (5 * Math.abs(i - getRow(this.getState()[i][j], goal)) + Math.abs(j - getCol(this.getState()[i][j], goal)));
+                                }
+                            }
+                        }
+                    }
+                    doubleMoveCost = (int)cost;
+                    return doubleMoveCost;
+                }
+            }
+        }
+        // If they are not jointed, or there is only one empty tile.
+        for (int i = 0; i < this.getState().length; i++) {
+            for (int j = 0; j < this.getState()[i].length; j++) {
+                if (this.getState()[i][j] != (i * this.getState()[i].length + (j + 1)) && this.getState()[i][j] != -1) {
                     cost += Math.abs(i - getRow(this.getState()[i][j], goal)) + Math.abs(j - getCol(this.getState()[i][j], goal));
+                }
+            }
+        }
+        normalCost = 5*(int)cost;
+        return normalCost;
+    }
+
+    private int manhattan1(node goal){
+        int cost = 0;
+        int tempCost = 0;
+        for (int i = 0; i < this.getState().length; i++) {
+            for (int j = 0; j < this.getState()[i].length; j++) {
+                if (this.getState()[i][j] != (i * this.getState()[i].length + (j + 1)) && this.getState()[i][j] != -1) {
+                    //If the one right to you is also right to you in the goal state.
+                    if(j < this.getState()[i].length-1 && this.getState()[i][j]+1 == this.getState()[i][j+1]){
+                        tempCost = 7*(Math.abs(i - getRow(this.getState()[i][j], goal)) + Math.abs(j - getCol(this.getState()[i][j], goal)));
+                        cost += tempCost;
+                        j++;
+                    }
+                    //If the one beneath me is is also beneath me in the goal state.
+                    else if(i<this.getState().length-1 && this.getState()[i][j] + this.getState().length == this.getState()[i+1][j]){
+                        tempCost = 6*(Math.abs(i - getRow(this.getState()[i][j], goal)) + Math.abs(j - getCol(this.getState()[i][j], goal)));
+                        cost += tempCost;
+                    }
+                    else{
+                        tempCost = 5*(Math.abs(i - getRow(this.getState()[i][j], goal)) + Math.abs(j - getCol(this.getState()[i][j], goal)));
+                        cost += tempCost;
+                    }
+                }
+            }
+        }
+        return cost;
+    }
+
+    private int manhattan2(node goal){
+        int cost = 0;
+        int tempCost = 0;
+        for (int i = 0; i < this.getState().length; i++) {
+            for (int j = 0; j < this.getState()[i].length; j++) {
+                if (this.getState()[i][j] != goal.getState()[i][j] && this.getState()[i][j] != -1) {
+                    //If the one right to you is also right to you in the goal state.
+                    if(j < this.getState()[i].length-1 &&
+                            this.getState()[i][j+1] == goal.getState()[getRow(this.getState()[i][j+1], goal)][getCol(this.getState()[i][j+1], goal)]){
+                        tempCost = 7*(Math.abs(i - getRow(this.getState()[i][j], goal)) + Math.abs(j - getCol(this.getState()[i][j], goal)));
+                        cost += tempCost;
+                        j++;
+                    }
+                    //If the one beneath me is is also beneath me in the goal state.
+                    else if(i<this.getState().length-1 &&
+                            this.getState()[i+1][j] == goal.getState()[getRow(this.getState()[i+1][j], goal)][getCol(this.getState()[i+1][j], goal)]){
+                        tempCost = 6*(Math.abs(i - getRow(this.getState()[i][j], goal)) + Math.abs(j - getCol(this.getState()[i][j], goal)));
+                        cost += tempCost;
+                    }
+                    else{
+                        tempCost = 5*(Math.abs(i - getRow(this.getState()[i][j], goal)) + Math.abs(j - getCol(this.getState()[i][j], goal)));
+                        cost += tempCost;
+                    }
                 }
             }
         }

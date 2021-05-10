@@ -1,4 +1,4 @@
-public class location {
+public class location implements Comparable<location> {
     private int x;
     private int y;
 
@@ -21,5 +21,32 @@ public class location {
 
     public void setY(int y) {
         this.y = y;
+    }
+
+
+    @Override
+    public int compareTo(location o) {
+        //same depth
+        if (this.x == o.x) {
+            if (o.y < this.y) {
+                return 1;
+            }
+            else if (o.y > this.y) {
+                return -1;
+            }
+            else {
+                return 0;
+            }
+        }
+        //same length
+        if (this.y == o.y) {
+            if (o.x < this.x) {
+                return 1;
+            }
+            else {
+                return -1;
+            }
+        }
+        return 0;
     }
 }

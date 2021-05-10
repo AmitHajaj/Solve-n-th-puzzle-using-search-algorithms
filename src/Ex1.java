@@ -1,15 +1,19 @@
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Scanner;
 import java.util.Stack;
 
 public class Ex1 {
-
-    public static void main(String[] args) throws FileNotFoundException {
+    public static void main(String[] args) throws IOException {
         String algo = "";
         boolean withTime = true;
-        boolean isOpen = false;
+        boolean isOpen = true;
         String boardSize = "";
         int boardLength = 0;
         int boardWidth = 0;
@@ -17,24 +21,26 @@ public class Ex1 {
         String goalBoard = "";
 
 
-
-//        File inFile = null;
-//        if (0 < args.length) {
-//            inFile = new File(args[0]);
-//        } else {
-//            System.err.println("Invalid arguments count:" + args.length);
-//            System.exit(-3);
-//        }
-        File inFile = new File("C:\\Users\\Amit Hajaj\\IdeaProjects\\deafult_package\\src\\input.txt");
+        File inFile = new File("src\\input.txt");
 
         Scanner scan = new Scanner(inFile);
 
+        //Get the algorithm we work on.
+        //and name it like it named in the algo class.
         algo = scan.nextLine();
-        if(scan.nextLine().charAt(0) != 'w'){
+        if(algo.equals("A*")){
+            algo = "AStar";
+        }
+        else if(algo.equals("IDA*")){
+            algo = "IDAStar";
+        }
+        String time = scan.nextLine();
+        if(time.equals("no time")){
             withTime = false;
         }
-        if(scan.nextLine().charAt(0) != 'n'){
-            isOpen = true;
+        String open = scan.nextLine();
+        if(open.equals("no time")){
+            isOpen = false;
         }
 
         //Get the board size and capitalized it.
@@ -44,6 +50,7 @@ public class Ex1 {
         boardLength = Integer.parseInt(boardSize.charAt(0)+"");
         boardWidth = Integer.parseInt(boardSize.charAt(2)+"");
 
+        //make the start board as a string.
         String currLine = scan.nextLine();
         while(currLine.charAt(0) != 'G'){
             startBoard = startBoard.concat(currLine + "\n");
@@ -53,6 +60,7 @@ public class Ex1 {
         //make startBoard a node
         node start = stringToNode(startBoard, boardLength, boardWidth);
 
+        //make the goal board as a string.
         currLine = scan.nextLine();
         for(int i=0; i<boardLength; i++){
             goalBoard = goalBoard.concat(currLine+"\n");
@@ -67,6 +75,7 @@ public class Ex1 {
         //make goalBoard a node.
         node goal = stringToNode(goalBoard, boardLength, boardWidth);
 
+        //pretty unnecessary
         HashMap<String, Integer> priceTable = new HashMap<>();
         priceTable.put("one", 5);
         priceTable.put("twoUp", 7);
@@ -74,20 +83,20 @@ public class Ex1 {
         priceTable.put("twoRight", 6);
         priceTable.put("twoLeft", 6);
 
+        //initial a puzzle and apply the algorithm on it.
         puzzle p = new puzzle(start, goal, priceTable);
-        Algo bfs = new Algo();
+        Algo algoRun = new Algo();
         long st = System.nanoTime();
+        File path = null;
         try {
-            Stack<node> path = (Stack<node>) bfs.AStar(p.getCurrentState(), p.getGoalState());
-            while (path != null && !path.isEmpty()){
-                System.out.println(path.pop().howIGotHere);
-            }
+            Method m = Algo.class.getDeclaredMethod(algo, p.getClass());
+            path = (File) m.invoke(algoRun, p);
         } catch (InvocationTargetException | IllegalAccessException | NoSuchMethodException e) {
             e.printStackTrace();
         }
         long end = System.nanoTime();
         if(withTime) {
-            System.out.println((end - st) / Math.pow(10, 9));
+            Files.write(Paths.get("output.txt"),("time: "+(end - st) / Math.pow(10, 9)).getBytes(), StandardOpenOption.APPEND);
         }
     }
 
