@@ -48,7 +48,12 @@ public class node implements Comparable<node> {
     }
 
     public void setH(node goal) {
-        this.h = this.manhattan2(goal);
+        if(this.locations.size() == 1){
+            this.h = this.normalManhattan(goal);
+        }
+        else {
+            this.h = this.manhattan1(goal);
+        }
     }
 
     public void setF(int f) {
@@ -530,6 +535,8 @@ public class node implements Comparable<node> {
         int doubleMoveCost = 0;
         int isJoint = this.isJoint();
         double cost =0;
+        int informer = -1;
+
 
         // cam move horizontally.
         if(isJoint == -1){
@@ -540,12 +547,31 @@ public class node implements Comparable<node> {
                     //Start calculate the Manhattan distance.
                     for (int i = 0; i < this.getState().length; i++) {
                         for (int j = 0; j < this.getState()[i].length; j++) {
+                            //If a misplaced tile has found
                             if (this.getState()[i][j] != (i * this.getState()[i].length + (j + 1)) && this.getState()[i][j] != -1) {
+                                //If this misplaced tile is next to a blank tile.
                                 if(j == 1 && (i == this.locations.get(0).getY() || i == this.locations.get(1).getY())){
-                                    cost += (3 * Math.abs(i - getRow(this.getState()[i][j], goal)) + Math.abs(j - getCol(this.getState()[i][j], goal)));
+                                    cost += (5 * Math.abs(i - getRow(this.getState()[i][j], goal))) + (3*Math.abs(j - getCol(this.getState()[i][j], goal)));
                                 }
+                                //If it is misplaced somewhere on the board.
                                 else {
-                                    cost += (5 * Math.abs(i - getRow(this.getState()[i][j], goal)) + Math.abs(j - getCol(this.getState()[i][j], goal)));
+                                    if(informer == -1) {
+                                        informer = nextTo(i, j, goal);
+                                        if (informer != -1) {
+                                            if (informer == i + 1) {
+                                                cost += (3 * (Math.abs(i - getRow(this.getState()[i][j], goal)) + Math.abs(j - getCol(this.getState()[i][j], goal))));
+                                            }
+                                            else if (informer == j + 1) {
+                                                cost += (3.5 * (Math.abs(i - getRow(this.getState()[i][j], goal)) + Math.abs(j - getCol(this.getState()[i][j], goal))));
+                                            }
+                                        }
+                                        else {
+                                            cost += (5 * (Math.abs(i - getRow(this.getState()[i][j], goal)) + Math.abs(j - getCol(this.getState()[i][j], goal))));
+                                        }
+                                    }
+                                    else {//release informer.
+                                        informer = -1;
+                                    }
                                 }
                             }
                         }
@@ -566,7 +592,23 @@ public class node implements Comparable<node> {
                                     cost += (3 * Math.abs(i - getRow(this.getState()[i][j], goal)) + Math.abs(j - getCol(this.getState()[i][j], goal)));
                                 }
                                 else {
-                                    cost += (5 * Math.abs(i - getRow(this.getState()[i][j], goal)) + Math.abs(j - getCol(this.getState()[i][j], goal)));
+                                    if(informer == -1) {
+                                        informer = nextTo(i, j, goal);
+                                        if (informer != -1) {
+                                            if (informer == i + 1) {
+                                                cost += (3 * (Math.abs(i - getRow(this.getState()[i][j], goal)) + Math.abs(j - getCol(this.getState()[i][j], goal))));
+                                            }
+                                            else if (informer == j + 1) {
+                                                cost += (3.5 * (Math.abs(i - getRow(this.getState()[i][j], goal)) + Math.abs(j - getCol(this.getState()[i][j], goal))));
+                                            }
+                                        }
+                                        else {
+                                            cost += (5 * (Math.abs(i - getRow(this.getState()[i][j], goal)) + Math.abs(j - getCol(this.getState()[i][j], goal))));
+                                        }
+                                    }
+                                    else {//release informer.
+                                        informer = -1;
+                                    }
                                 }
                             }
                         }
@@ -589,7 +631,23 @@ public class node implements Comparable<node> {
                                     cost += (3 * Math.abs(i - getRow(this.getState()[i][j], goal)) + Math.abs(j - getCol(this.getState()[i][j], goal)));
                                 }
                                 else {
-                                    cost += (5 * Math.abs(i - getRow(this.getState()[i][j], goal)) + Math.abs(j - getCol(this.getState()[i][j], goal)));
+                                    if(informer == -1) {
+                                        informer = nextTo(i, j, goal);
+                                        if (informer != -1) {
+                                            if (informer == i + 1) {
+                                                cost += (3 * (Math.abs(i - getRow(this.getState()[i][j], goal)) + Math.abs(j - getCol(this.getState()[i][j], goal))));
+                                            }
+                                            else if (informer == j + 1) {
+                                                cost += (3.5 *(Math.abs(i - getRow(this.getState()[i][j], goal)) + Math.abs(j - getCol(this.getState()[i][j], goal))));
+                                            }
+                                        }
+                                        else {
+                                            cost += (5 * (Math.abs(i - getRow(this.getState()[i][j], goal)) + Math.abs(j - getCol(this.getState()[i][j], goal))));
+                                        }
+                                    }
+                                    else {//release informer.
+                                        informer = -1;
+                                    }
                                 }
                             }
                         }
@@ -613,7 +671,23 @@ public class node implements Comparable<node> {
                                     cost += (3.5 * Math.abs(i - getRow(this.getState()[i][j], goal)) + Math.abs(j - getCol(this.getState()[i][j], goal)));
                                 }
                                 else {
-                                    cost += (5 * Math.abs(i - getRow(this.getState()[i][j], goal)) + Math.abs(j - getCol(this.getState()[i][j], goal)));
+                                    if(informer == -1) {
+                                        informer = nextTo(i, j, goal);
+                                        if (informer != -1) {
+                                            if (informer == i + 1) {
+                                                cost += (3 * (Math.abs(i - getRow(this.getState()[i][j], goal)) + Math.abs(j - getCol(this.getState()[i][j], goal))));
+                                            }
+                                            else if (informer == j + 1) {
+                                                cost += (3.5 * (Math.abs(i - getRow(this.getState()[i][j], goal)) + Math.abs(j - getCol(this.getState()[i][j], goal))));
+                                            }
+                                        }
+                                        else {
+                                            cost += (5 *(Math.abs(i - getRow(this.getState()[i][j], goal)) + Math.abs(j - getCol(this.getState()[i][j], goal))));
+                                        }
+                                    }
+                                    else {//release informer.
+                                        informer = -1;
+                                    }
                                 }
                             }
                         }
@@ -634,7 +708,23 @@ public class node implements Comparable<node> {
                                     cost += (3.5 * Math.abs(i - getRow(this.getState()[i][j], goal)) + Math.abs(j - getCol(this.getState()[i][j], goal)));
                                 }
                                 else {
-                                    cost += (5 * Math.abs(i - getRow(this.getState()[i][j], goal)) + Math.abs(j - getCol(this.getState()[i][j], goal)));
+                                    if(informer == -1) {
+                                        informer = nextTo(i, j, goal);
+                                        if (informer != -1) {
+                                            if (informer == i + 1) {
+                                                cost += (3 * (Math.abs(i - getRow(this.getState()[i][j], goal)) + Math.abs(j - getCol(this.getState()[i][j], goal))));
+                                            }
+                                            else if (informer == j + 1) {
+                                                cost += (3.5 * (Math.abs(i - getRow(this.getState()[i][j], goal)) + Math.abs(j - getCol(this.getState()[i][j], goal))));
+                                            }
+                                        }
+                                        else {
+                                            cost += (5 * (Math.abs(i - getRow(this.getState()[i][j], goal)) + Math.abs(j - getCol(this.getState()[i][j], goal))));
+                                        }
+                                    }
+                                    else {//release informer.
+                                        informer = -1;
+                                    }
                                 }
                             }
                         }
@@ -657,7 +747,23 @@ public class node implements Comparable<node> {
                                     cost += (3.5 * Math.abs(i - getRow(this.getState()[i][j], goal)) + Math.abs(j - getCol(this.getState()[i][j], goal)));
                                 }
                                 else {
-                                    cost += (5 * Math.abs(i - getRow(this.getState()[i][j], goal)) + Math.abs(j - getCol(this.getState()[i][j], goal)));
+                                    if(informer == -1) {
+                                        informer = nextTo(i, j, goal);
+                                        if (informer != -1) {
+                                            if (informer == i + 1) {
+                                                cost += (3 *(Math.abs(i - getRow(this.getState()[i][j], goal)) + Math.abs(j - getCol(this.getState()[i][j], goal))));
+                                            }
+                                            else if (informer == j + 1) {
+                                                cost += (3.5 * (Math.abs(i - getRow(this.getState()[i][j], goal)) + Math.abs(j - getCol(this.getState()[i][j], goal))));
+                                            }
+                                        }
+                                        else {
+                                            cost += (5 * (Math.abs(i - getRow(this.getState()[i][j], goal)) + Math.abs(j - getCol(this.getState()[i][j], goal))));
+                                        }
+                                    }
+                                    else {//release informer.
+                                        informer = -1;
+                                    }
                                 }
                             }
                         }
@@ -671,34 +777,50 @@ public class node implements Comparable<node> {
         for (int i = 0; i < this.getState().length; i++) {
             for (int j = 0; j < this.getState()[i].length; j++) {
                 if (this.getState()[i][j] != (i * this.getState()[i].length + (j + 1)) && this.getState()[i][j] != -1) {
-                    cost += Math.abs(i - getRow(this.getState()[i][j], goal)) + Math.abs(j - getCol(this.getState()[i][j], goal));
+                    if(informer == -1) {
+                        informer = nextTo(i, j, goal);
+                        if (informer != -1) {
+                            if (informer == i + 1) {
+                                cost += ((6 * (Math.abs(i - getRow(this.getState()[i][j], goal)))) + (5*Math.abs(j - getCol(this.getState()[i][j], goal))));
+                            }
+                            else if (informer == j + 1) {
+                                cost += ((7 * (Math.abs(i - getRow(this.getState()[i][j], goal)))) + (5*Math.abs(j - getCol(this.getState()[i][j], goal))));
+                            }
+                        }
+                        else {
+                            cost += (5 * (Math.abs(i - getRow(this.getState()[i][j], goal)) + Math.abs(j - getCol(this.getState()[i][j], goal))));
+                        }
+                    }
+                    else {//release informer.
+                        informer = -1;
+                    }
                 }
             }
         }
-        normalCost = 5*(int)cost;
+        normalCost = (int)cost;
         return normalCost;
     }
 
-    private int manhattan1(node goal){
+    private int manhattan1(node goal) {
         int cost = 0;
         int tempCost = 0;
+        int informer = -1;
         for (int i = 0; i < this.getState().length; i++) {
             for (int j = 0; j < this.getState()[i].length; j++) {
                 if (this.getState()[i][j] != (i * this.getState()[i].length + (j + 1)) && this.getState()[i][j] != -1) {
-                    //If the one right to you is also right to you in the goal state.
-                    if(j < this.getState()[i].length-1 && this.getState()[i][j]+1 == this.getState()[i][j+1]){
-                        tempCost = 7*(Math.abs(i - getRow(this.getState()[i][j], goal)) + Math.abs(j - getCol(this.getState()[i][j], goal)));
-                        cost += tempCost;
-                        j++;
-                    }
-                    //If the one beneath me is is also beneath me in the goal state.
-                    else if(i<this.getState().length-1 && this.getState()[i][j] + this.getState().length == this.getState()[i+1][j]){
-                        tempCost = 6*(Math.abs(i - getRow(this.getState()[i][j], goal)) + Math.abs(j - getCol(this.getState()[i][j], goal)));
-                        cost += tempCost;
-                    }
-                    else{
-                        tempCost = 5*(Math.abs(i - getRow(this.getState()[i][j], goal)) + Math.abs(j - getCol(this.getState()[i][j], goal)));
-                        cost += tempCost;
+                    if (informer == -1) {
+                        informer = nextTo(i, j, goal);
+                        if (informer != -1) {
+                            if (informer == i + 1) {
+                                cost += ((6 * (Math.abs(i - getRow(this.getState()[i][j], goal)))) + (5 * Math.abs(j - getCol(this.getState()[i][j], goal))));
+                            } else if (informer == j + 1) {
+                                cost += ((7 * (Math.abs(i - getRow(this.getState()[i][j], goal)))) + (5 * Math.abs(j - getCol(this.getState()[i][j], goal))));
+                            }
+                        } else {
+                            cost += (5 * (Math.abs(i - getRow(this.getState()[i][j], goal)) + Math.abs(j - getCol(this.getState()[i][j], goal))));
+                        }
+                    } else {//release informer.
+                        informer = -1;
                     }
                 }
             }
@@ -726,9 +848,21 @@ public class node implements Comparable<node> {
                         cost += tempCost;
                     }
                     else{
-                        tempCost = 5*(Math.abs(i - getRow(this.getState()[i][j], goal)) + Math.abs(j - getCol(this.getState()[i][j], goal)));
+                        tempCost = 3*(Math.abs(i - getRow(this.getState()[i][j], goal)) + Math.abs(j - getCol(this.getState()[i][j], goal)));
                         cost += tempCost;
                     }
+                }
+            }
+        }
+        return cost;
+    }
+
+    private int normalManhattan(node goal){
+        int cost = 0;
+        for(int i = 0; i<this.getState().length; i++) {
+            for(int j = 0; j< this.getState()[i].length; j++){
+                if(this.getState()[i][j] != (i*this.getState()[i].length + (j+1)) && this.getState()[i][j] != -1){
+                    cost += Math.abs(i - getRow(this.getState()[i][j], goal)) + Math.abs(j - getCol(this.getState()[i][j], goal));
                 }
             }
         }
@@ -765,5 +899,30 @@ public class node implements Comparable<node> {
             }
         }
         return -1;
+    }
+
+    /**
+     * helper function
+     */
+    int nextTo(int i, int j, node goal){
+        int ans = -1;
+        int row = getRow(this.getState()[i][j], goal);
+        int col = getCol(this.getState()[i][j], goal);
+        //if the current state neighbor is at some edge
+        if(row == this.getState().length-1 || col == this.getState()[0].length-1){
+            return -1;
+        }
+        //If the one right to you is also right to you in the goal state.
+        if (j < this.getState()[i].length - 1 && this.getState()[i][j + 1] != -1 &&
+                this.getState()[i][j + 1] == goal.getState()[row][col + 1]) {
+            ans = j + 1;
+        }
+        //If the one beneath me is is also beneath me in the goal state.
+        else if(i<this.getState().length-1 && this.getState()[i+1][j] != -1 &&
+                this.getState()[i+1][j] == goal.getState()[row+1][col]){
+            ans = i+1;
+        }
+
+        return ans;
     }
 }

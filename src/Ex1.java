@@ -21,7 +21,7 @@ public class Ex1 {
         String goalBoard = "";
 
 
-        File inFile = new File("src\\input.txt");
+        File inFile = new File("input.txt");
 
         Scanner scan = new Scanner(inFile);
 

@@ -49,4 +49,18 @@ public class location implements Comparable<location> {
         }
         return 0;
     }
+
+    @Override
+    public boolean equals(Object obj){
+        location o = (location) obj;
+        if(o.getX() != this.x){
+            return false;
+        }
+        else if(o.getY() != this.y){
+            return false;
+        }
+        else{
+            return true;
+        }
+    }
 }
